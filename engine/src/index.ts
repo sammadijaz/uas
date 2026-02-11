@@ -60,3 +60,36 @@ export {
 } from "./utils/variables";
 export { createLogger } from "./utils/logger";
 export type { Logger } from "./utils/logger";
+
+// Windows pipeline (exposed for advanced use / testing)
+export {
+  smartDownload,
+  evaluateDownload,
+  verifyInstaller,
+  executeMsi,
+  buildMsiArgs,
+  detectInstalled,
+  detectVersionByCommand,
+  detectVersionByRegistry,
+  readAppState,
+  writeAppState,
+  removeAppState,
+  getStateFilePath,
+  checkElevation,
+  ensureElevated,
+  lookupMsiExitCode,
+  MSI_EXIT_CODES,
+} from "./windows";
+
+export type {
+  SmartDownloadOptions,
+  SmartDownloadResult,
+  MsiInstallOptions,
+  MsiInstallResult,
+  MsiExitCodeInfo,
+  AppStateFile,
+  DetectionResult,
+  DownloadDecision,
+  ElevationStatus,
+  DetectInstalledOptions,
+} from "./windows";

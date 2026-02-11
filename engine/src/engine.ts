@@ -38,9 +38,15 @@ import {
 import { StateDB } from "./state-db";
 import { createLogger, Logger } from "./utils/logger";
 import { getExecutor } from "./executors";
-import { downloadFile, checkUrlReachable } from "./downloader";
-import { verifyChecksum } from "./verifier";
+import { checkUrlReachable } from "./downloader";
 import { applySideEffects, rollbackSideEffects } from "./side-effects";
+import {
+  smartDownload,
+  detectInstalled,
+  writeAppState,
+  removeAppState,
+  ensureElevated,
+} from "./windows";
 
 const execAsync = promisify(exec);
 
@@ -210,12 +216,12 @@ export class UASEngine {
       );
     }
 
-    // Check if already installed at this version
+    // Check if already installed at this version (SQLite state DB)
     const existing = this.stateDb.getInstalledApp(recipe.id);
     if (existing && existing.version === recipe.version && !options.force) {
       this.logger.info(
         { app: recipe.id, version: recipe.version },
-        "Already installed at requested version",
+        "Already installed at requested version (state DB)",
       );
       transition("COMPLETED", "success", { reason: "already_installed" });
       return {
@@ -229,6 +235,50 @@ export class UASEngine {
         side_effects_applied: [],
         side_effects_rolled_back: [],
       };
+    }
+
+    // Check if already installed via OS-level detection (idempotency)
+    if (!options.force && !dryRun) {
+      const detection = await detectInstalled({
+        appId: recipe.id,
+        appName: recipe.name,
+        versionCmd: recipe.version_cmd,
+        versionRegex: recipe.version_regex,
+        targetVersion: recipe.version,
+        logger: this.logger,
+      });
+
+      if (detection.found) {
+        this.logger.info(
+          { app: recipe.id, version: detection.version, source: detection.source },
+          `Already installed. Skipping.`,
+        );
+        transition("COMPLETED", "success", {
+          reason: "already_installed",
+          detection_source: detection.source,
+        });
+        return {
+          execution_id: executionId,
+          app_id: recipe.id,
+          version: recipe.version,
+          final_state: "COMPLETED",
+          started_at: startedAt,
+          finished_at: new Date().toISOString(),
+          dry_run: dryRun,
+          side_effects_applied: [],
+          side_effects_rolled_back: [],
+        };
+      }
+    }
+
+    // Pre-flight elevation check for recipes requiring admin
+    if (recipe.requirements.admin && !dryRun) {
+      const elevation = await ensureElevated(this.logger);
+      if (!elevation.elevated) {
+        this.logger.warn(
+          "Installation requires admin. UAC prompt will appear during execution.",
+        );
+      }
     }
 
     transition("VALIDATING", "success");
@@ -247,9 +297,9 @@ export class UASEngine {
 
     transition("RESOLVING", "success");
 
-    // ─── DOWNLOADING ───
+    // ─── DOWNLOADING + VERIFYING (smart, idempotent) ───
     if (dryRun) {
-      this.logger.info("[DRY RUN] Skipping download");
+      this.logger.info("[DRY RUN] Skipping download and verification");
       transition("DOWNLOADING", "success", { dry_run: true });
       transition("VERIFYING", "success", { dry_run: true });
     } else {
@@ -258,11 +308,11 @@ export class UASEngine {
       let downloadedFilePath: string;
       try {
         const downloadDir = path.join(this.options.download_dir, recipe.id);
-        const result = await downloadFile(
-          recipe.installer.url,
-          downloadDir,
-          undefined,
-          (progress) => {
+        const dlResult = await smartDownload({
+          url: recipe.installer.url,
+          expectedSha256: recipe.installer.sha256,
+          destDir: downloadDir,
+          onProgress: (progress) => {
             this.emit({
               type: "progress",
               timestamp: new Date().toISOString(),
@@ -276,9 +326,16 @@ export class UASEngine {
               },
             });
           },
-          this.logger,
-        );
-        downloadedFilePath = result.file_path;
+          logger: this.logger,
+        });
+        downloadedFilePath = dlResult.filePath;
+
+        if (!dlResult.downloaded) {
+          this.logger.info(
+            { reason: dlResult.skipReason },
+            "Download skipped — valid installer already cached",
+          );
+        }
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
         return fail("NETWORK_ERROR", message, "DOWNLOADING");
@@ -286,27 +343,8 @@ export class UASEngine {
 
       transition("DOWNLOADING", "success");
 
-      // ─── VERIFYING ───
-      transition("VERIFYING");
-
-      try {
-        const verification = await verifyChecksum(
-          downloadedFilePath,
-          recipe.installer.sha256,
-        );
-        if (!verification.valid) {
-          return fail(
-            "INTEGRITY_ERROR",
-            `Checksum mismatch: expected ${verification.expected}, got ${verification.actual}`,
-            "VERIFYING",
-          );
-        }
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : String(err);
-        return fail("INTEGRITY_ERROR", message, "VERIFYING");
-      }
-
-      transition("VERIFYING", "success");
+      // Smart download already verifies checksum, but log the transition
+      transition("VERIFYING", "success", { verified_by: "smart_download" });
 
       // ─── EXECUTING ───
       transition("EXECUTING");
@@ -399,21 +437,16 @@ export class UASEngine {
 
       transition("CONFIRMING", "success");
 
-      // Clean up downloaded file
-      try {
-        const downloadDir = path.join(this.options.download_dir, recipe.id);
-        if (fs.existsSync(downloadDir)) {
-          fs.rmSync(downloadDir, { recursive: true, force: true });
-        }
-      } catch {
-        // Cleanup failure is non-fatal
-      }
+      // NOTE: Downloaded installer is PRESERVED (not deleted) for:
+      // - Future cache hits (idempotent reinstalls skip download)
+      // - Debugging failed installs
+      // - Offline reinstallation
     }
 
     // ─── COMPLETED ───
     transition("COMPLETED", "success");
 
-    // Record in state DB
+    // Record in state DB + state file
     if (!dryRun) {
       const recipeHash = crypto
         .createHash("sha256")
@@ -427,6 +460,18 @@ export class UASEngine {
         install_dir: installDir,
         recipe_hash: recipeHash,
         side_effects: appliedEffects,
+      });
+
+      // Write per-app state file for idempotency detection
+      const downloadDir = path.join(this.options.download_dir, recipe.id);
+      const resolvedFilename = path.basename(new URL(recipe.installer.url).pathname) || "installer";
+      writeAppState(recipe.id, {
+        version: recipe.version,
+        installedAt: new Date().toISOString(),
+        installerPath: path.join(downloadDir, resolvedFilename),
+        checksum: recipe.installer.sha256,
+        method: recipe.installer.type as "msi" | "exe" | "zip" | "portable",
+        installDir,
       });
     }
 
@@ -513,6 +558,7 @@ export class UASEngine {
       }
 
       this.stateDb.removeInstall(appId);
+      removeAppState(appId);
     }
 
     this.logger.info({ app: appId, dryRun }, "Uninstall complete");
