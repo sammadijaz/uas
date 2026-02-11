@@ -5,9 +5,9 @@
  * For tests, use app.ts directly with supertest.
  */
 
-import { loadConfig } from './config';
-import { Database } from './db';
-import { createApp } from './app';
+import { loadConfig } from "./config";
+import { Database } from "./db";
+import { createApp } from "./app";
 
 async function main(): Promise<void> {
   const config = loadConfig();
@@ -23,18 +23,18 @@ async function main(): Promise<void> {
 
   // Graceful shutdown
   const shutdown = () => {
-    console.log('Shutting down...');
+    console.log("Shutting down...");
     server.close(() => {
       db.close();
       process.exit(0);
     });
   };
 
-  process.on('SIGINT', shutdown);
-  process.on('SIGTERM', shutdown);
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
 }
 
 main().catch((err) => {
-  console.error('Failed to start server:', err);
+  console.error("Failed to start server:", err);
   process.exit(1);
 });

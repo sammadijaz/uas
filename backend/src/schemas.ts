@@ -4,12 +4,16 @@
  * All API input is validated before hitting route handlers.
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 // ─── Auth ────────────────────────────────────────────────────
 
 export const RegisterSchema = z.object({
-  username: z.string().min(3).max(64).regex(/^[a-zA-Z0-9_-]+$/),
+  username: z
+    .string()
+    .min(3)
+    .max(64)
+    .regex(/^[a-zA-Z0-9_-]+$/),
   email: z.string().email().max(255),
   password: z.string().min(8).max(128),
 });
@@ -23,14 +27,14 @@ export const LoginSchema = z.object({
 
 export const CreateProfileSchema = z.object({
   name: z.string().min(1).max(128),
-  description: z.string().max(512).optional().default(''),
+  description: z.string().max(512).optional().default(""),
   data: z.object({
     apps: z.array(
       z.object({
         id: z.string().min(1),
         version: z.string().optional(),
         optional: z.boolean().optional(),
-      })
+      }),
     ),
     metadata: z
       .object({
@@ -51,7 +55,7 @@ export const UpdateProfileSchema = z.object({
           id: z.string().min(1),
           version: z.string().optional(),
           optional: z.boolean().optional(),
-        })
+        }),
       ),
       metadata: z
         .object({
@@ -67,8 +71,8 @@ export const UpdateProfileSchema = z.object({
 
 export const RegisterMachineSchema = z.object({
   name: z.string().min(1).max(128),
-  hostname: z.string().max(255).optional().default(''),
-  os_version: z.string().max(64).optional().default(''),
+  hostname: z.string().max(255).optional().default(""),
+  os_version: z.string().max(64).optional().default(""),
 });
 
 // ─── Install History ─────────────────────────────────────────
@@ -77,8 +81,8 @@ export const RecordInstallSchema = z.object({
   machine_id: z.string().uuid(),
   app_id: z.string().min(1).max(64),
   version: z.string().min(1),
-  action: z.enum(['install', 'uninstall', 'upgrade', 'rollback']),
-  status: z.enum(['success', 'failed', 'partial']),
+  action: z.enum(["install", "uninstall", "upgrade", "rollback"]),
+  status: z.enum(["success", "failed", "partial"]),
   details: z.record(z.unknown()).optional().default({}),
 });
 

@@ -4,9 +4,9 @@
  * JWT token generation/verification and password hashing.
  */
 
-import jwt, { SignOptions } from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
-import { Request, Response, NextFunction } from 'express';
+import jwt, { SignOptions } from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import { Request, Response, NextFunction } from "express";
 
 export interface TokenPayload {
   userId: string;
@@ -25,14 +25,21 @@ export async function hashPassword(password: string): Promise<string> {
 /**
  * Verify a password against a hash.
  */
-export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+export async function verifyPassword(
+  password: string,
+  hash: string,
+): Promise<boolean> {
   return bcrypt.compare(password, hash);
 }
 
 /**
  * Generate a JWT token for a user.
  */
-export function generateToken(payload: TokenPayload, secret: string, expiry: string): string {
+export function generateToken(
+  payload: TokenPayload,
+  secret: string,
+  expiry: string,
+): string {
   const opts: SignOptions = { expiresIn: expiry as any };
   return jwt.sign(payload, secret, opts);
 }
@@ -52,8 +59,10 @@ export function verifyToken(token: string, secret: string): TokenPayload {
 export function requireAuth(secret: string) {
   return (req: Request, res: Response, next: NextFunction): void => {
     const header = req.headers.authorization;
-    if (!header || !header.startsWith('Bearer ')) {
-      res.status(401).json({ error: 'Missing or invalid Authorization header' });
+    if (!header || !header.startsWith("Bearer ")) {
+      res
+        .status(401)
+        .json({ error: "Missing or invalid Authorization header" });
       return;
     }
 
@@ -63,7 +72,7 @@ export function requireAuth(secret: string) {
       (req as any).user = payload;
       next();
     } catch {
-      res.status(401).json({ error: 'Invalid or expired token' });
+      res.status(401).json({ error: "Invalid or expired token" });
     }
   };
 }

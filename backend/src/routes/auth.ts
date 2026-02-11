@@ -6,29 +6,43 @@
  * GET  /api/auth/me        — Get current user info (requires auth)
  */
 
-import { Router, Request, Response } from 'express';
-import { v4 as uuid } from 'uuid';
-import { Database } from '../db';
-import { hashPassword, verifyPassword, generateToken, requireAuth } from '../auth';
-import { RegisterSchema, LoginSchema } from '../schemas';
+import { Router, Request, Response } from "express";
+import { v4 as uuid } from "uuid";
+import { Database } from "../db";
+import {
+  hashPassword,
+  verifyPassword,
+  generateToken,
+  requireAuth,
+} from "../auth";
+import { RegisterSchema, LoginSchema } from "../schemas";
 
-export function authRoutes(db: Database, jwtSecret: string, jwtExpiry: string): Router {
+export function authRoutes(
+  db: Database,
+  jwtSecret: string,
+  jwtExpiry: string,
+): Router {
   const router = Router();
 
   // POST /api/auth/register
-  router.post('/register', async (req: Request, res: Response) => {
+  router.post("/register", async (req: Request, res: Response) => {
     const parse = RegisterSchema.safeParse(req.body);
     if (!parse.success) {
-      res.status(400).json({ error: 'Validation failed', details: parse.error.flatten() });
+      res
+        .status(400)
+        .json({ error: "Validation failed", details: parse.error.flatten() });
       return;
     }
 
     const { username, email, password } = parse.data;
 
     // Check uniqueness
-    const existing = db.getOne('SELECT id FROM users WHERE username = ? OR email = ?', [username, email]);
+    const existing = db.getOne(
+      "SELECT id FROM users WHERE username = ? OR email = ?",
+      [username, email],
+    );
     if (existing) {
-      res.status(409).json({ error: 'Username or email already exists' });
+      res.status(409).json({ error: "Username or email already exists" });
       return;
     }
 
@@ -36,8 +50,8 @@ export function authRoutes(db: Database, jwtSecret: string, jwtExpiry: string): 
     const passwordHash = await hashPassword(password);
 
     db.run(
-      'INSERT INTO users (id, username, email, password_hash) VALUES (?, ?, ?, ?)',
-      [id, username, email, passwordHash]
+      "INSERT INTO users (id, username, email, password_hash) VALUES (?, ?, ?, ?)",
+      [id, username, email, passwordHash],
     );
     db.persist();
 
@@ -50,35 +64,42 @@ export function authRoutes(db: Database, jwtSecret: string, jwtExpiry: string): 
   });
 
   // POST /api/auth/login
-  router.post('/login', async (req: Request, res: Response) => {
+  router.post("/login", async (req: Request, res: Response) => {
     const parse = LoginSchema.safeParse(req.body);
     if (!parse.success) {
-      res.status(400).json({ error: 'Validation failed', details: parse.error.flatten() });
+      res
+        .status(400)
+        .json({ error: "Validation failed", details: parse.error.flatten() });
       return;
     }
 
     const { username, password } = parse.data;
 
-    const user = db.getOne<{ id: string; username: string; email: string; password_hash: string }>(
-      'SELECT id, username, email, password_hash FROM users WHERE username = ?',
-      [username]
+    const user = db.getOne<{
+      id: string;
+      username: string;
+      email: string;
+      password_hash: string;
+    }>(
+      "SELECT id, username, email, password_hash FROM users WHERE username = ?",
+      [username],
     );
 
     if (!user) {
-      res.status(401).json({ error: 'Invalid credentials' });
+      res.status(401).json({ error: "Invalid credentials" });
       return;
     }
 
     const valid = await verifyPassword(password, user.password_hash as string);
     if (!valid) {
-      res.status(401).json({ error: 'Invalid credentials' });
+      res.status(401).json({ error: "Invalid credentials" });
       return;
     }
 
     const token = generateToken(
       { userId: user.id as string, username: user.username as string },
       jwtSecret,
-      jwtExpiry
+      jwtExpiry,
     );
 
     res.json({
@@ -88,15 +109,19 @@ export function authRoutes(db: Database, jwtSecret: string, jwtExpiry: string): 
   });
 
   // GET /api/auth/me
-  router.get('/me', requireAuth(jwtSecret), (req: Request, res: Response) => {
+  router.get("/me", requireAuth(jwtSecret), (req: Request, res: Response) => {
     const { userId } = (req as any).user;
-    const user = db.getOne<{ id: string; username: string; email: string; created_at: string }>(
-      'SELECT id, username, email, created_at FROM users WHERE id = ?',
-      [userId]
-    );
+    const user = db.getOne<{
+      id: string;
+      username: string;
+      email: string;
+      created_at: string;
+    }>("SELECT id, username, email, created_at FROM users WHERE id = ?", [
+      userId,
+    ]);
 
     if (!user) {
-      res.status(404).json({ error: 'User not found' });
+      res.status(404).json({ error: "User not found" });
       return;
     }
 

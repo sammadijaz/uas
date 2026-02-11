@@ -12,11 +12,11 @@
  *   5. Downloads installer, runs it, quits current app
  */
 
-import { app } from 'electron';
-import * as https from 'https';
-import * as fs from 'fs';
-import * as path from 'path';
-import { execFile } from 'child_process';
+import { app } from "electron";
+import * as https from "https";
+import * as fs from "fs";
+import * as path from "path";
+import { execFile } from "child_process";
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -38,10 +38,10 @@ export interface AutoUpdateConfig {
 }
 
 const DEFAULT_CONFIG: Required<AutoUpdateConfig> = {
-  repo: 'user/uas',
-  currentVersion: '0.1.0',
+  repo: "user/uas",
+  currentVersion: "0.1.0",
   checkInterval: 4 * 60 * 60 * 1000,
-  assetPattern: 'uas-setup-{version}.exe',
+  assetPattern: "uas-setup-{version}.exe",
 };
 
 /**
@@ -51,8 +51,8 @@ const DEFAULT_CONFIG: Required<AutoUpdateConfig> = {
  *   0  if equal
  */
 function compareSemver(a: string, b: string): number {
-  const pa = a.replace(/^v/, '').split('.').map(Number);
-  const pb = b.replace(/^v/, '').split('.').map(Number);
+  const pa = a.replace(/^v/, "").split(".").map(Number);
+  const pb = b.replace(/^v/, "").split(".").map(Number);
   for (let i = 0; i < 3; i++) {
     const va = pa[i] || 0;
     const vb = pb[i] || 0;
@@ -67,28 +67,38 @@ function compareSemver(a: string, b: string): number {
  */
 function fetchJSON(url: string): Promise<any> {
   return new Promise((resolve, reject) => {
-    const req = https.get(url, {
-      headers: {
-        'User-Agent': 'UAS-AutoUpdater',
-        'Accept': 'application/vnd.github.v3+json',
+    const req = https.get(
+      url,
+      {
+        headers: {
+          "User-Agent": "UAS-AutoUpdater",
+          Accept: "application/vnd.github.v3+json",
+        },
       },
-    }, (res) => {
-      // Follow redirects
-      if (res.statusCode === 301 || res.statusCode === 302) {
-        return fetchJSON(res.headers.location!).then(resolve, reject);
-      }
-      if (res.statusCode !== 200) {
-        return reject(new Error(`HTTP ${res.statusCode}`));
-      }
-      let data = '';
-      res.on('data', (chunk) => data += chunk);
-      res.on('end', () => {
-        try { resolve(JSON.parse(data)); }
-        catch (e) { reject(e); }
-      });
+      (res) => {
+        // Follow redirects
+        if (res.statusCode === 301 || res.statusCode === 302) {
+          return fetchJSON(res.headers.location!).then(resolve, reject);
+        }
+        if (res.statusCode !== 200) {
+          return reject(new Error(`HTTP ${res.statusCode}`));
+        }
+        let data = "";
+        res.on("data", (chunk) => (data += chunk));
+        res.on("end", () => {
+          try {
+            resolve(JSON.parse(data));
+          } catch (e) {
+            reject(e);
+          }
+        });
+      },
+    );
+    req.on("error", reject);
+    req.setTimeout(15000, () => {
+      req.destroy();
+      reject(new Error("Timeout"));
     });
-    req.on('error', reject);
-    req.setTimeout(15000, () => { req.destroy(); reject(new Error('Timeout')); });
   });
 }
 
@@ -96,34 +106,34 @@ function fetchJSON(url: string): Promise<any> {
  * Check GitHub Releases for a newer version.
  */
 export async function checkForUpdate(
-  config: Partial<AutoUpdateConfig> = {}
+  config: Partial<AutoUpdateConfig> = {},
 ): Promise<UpdateInfo | null> {
   const cfg = { ...DEFAULT_CONFIG, ...config };
   const url = `https://api.github.com/repos/${cfg.repo}/releases/latest`;
 
   try {
     const release = await fetchJSON(url);
-    const latestVersion = (release.tag_name as string).replace(/^v/, '');
+    const latestVersion = (release.tag_name as string).replace(/^v/, "");
 
     if (compareSemver(latestVersion, cfg.currentVersion) <= 0) {
       return null; // Already up to date
     }
 
     // Find matching asset
-    const assetName = cfg.assetPattern.replace('{version}', latestVersion);
+    const assetName = cfg.assetPattern.replace("{version}", latestVersion);
     const asset = (release.assets as any[])?.find(
-      (a: any) => a.name === assetName
+      (a: any) => a.name === assetName,
     );
 
     return {
       currentVersion: cfg.currentVersion,
       latestVersion,
       downloadUrl: asset?.browser_download_url || release.html_url,
-      releaseNotes: release.body || '',
-      publishedAt: release.published_at || '',
+      releaseNotes: release.body || "",
+      publishedAt: release.published_at || "",
     };
   } catch (err) {
-    console.error('[auto-update] Check failed:', err);
+    console.error("[auto-update] Check failed:", err);
     return null;
   }
 }
@@ -132,34 +142,48 @@ export async function checkForUpdate(
  * Download the update installer and run it.
  */
 export async function downloadAndInstall(update: UpdateInfo): Promise<void> {
-  const tempDir = app?.getPath('temp') || process.env.TEMP || '/tmp';
+  const tempDir = app?.getPath("temp") || process.env.TEMP || "/tmp";
   const filename = `uas-setup-${update.latestVersion}.exe`;
   const filepath = path.join(tempDir, filename);
 
   // Download
   await new Promise<void>((resolve, reject) => {
     const file = fs.createWriteStream(filepath);
-    https.get(update.downloadUrl, {
-      headers: { 'User-Agent': 'UAS-AutoUpdater' },
-    }, (res) => {
-      if (res.statusCode === 301 || res.statusCode === 302) {
-        file.close();
-        fs.unlinkSync(filepath);
-        // Follow redirect
-        https.get(res.headers.location!, (res2) => {
-          res2.pipe(file);
-          file.on('finish', () => { file.close(); resolve(); });
-        }).on('error', reject);
-        return;
-      }
-      res.pipe(file);
-      file.on('finish', () => { file.close(); resolve(); });
-    }).on('error', reject);
+    https
+      .get(
+        update.downloadUrl,
+        {
+          headers: { "User-Agent": "UAS-AutoUpdater" },
+        },
+        (res) => {
+          if (res.statusCode === 301 || res.statusCode === 302) {
+            file.close();
+            fs.unlinkSync(filepath);
+            // Follow redirect
+            https
+              .get(res.headers.location!, (res2) => {
+                res2.pipe(file);
+                file.on("finish", () => {
+                  file.close();
+                  resolve();
+                });
+              })
+              .on("error", reject);
+            return;
+          }
+          res.pipe(file);
+          file.on("finish", () => {
+            file.close();
+            resolve();
+          });
+        },
+      )
+      .on("error", reject);
   });
 
   // Run installer silently and quit
-  execFile(filepath, ['/S'], (err) => {
-    if (err) console.error('[auto-update] Install failed:', err);
+  execFile(filepath, ["/S"], (err) => {
+    if (err) console.error("[auto-update] Install failed:", err);
   });
 
   // Quit current app after a short delay
@@ -171,13 +195,17 @@ export async function downloadAndInstall(update: UpdateInfo): Promise<void> {
 /**
  * Start periodic update checks.
  */
-export function startAutoUpdateLoop(config: Partial<AutoUpdateConfig> = {}): void {
+export function startAutoUpdateLoop(
+  config: Partial<AutoUpdateConfig> = {},
+): void {
   const cfg = { ...DEFAULT_CONFIG, ...config };
 
   const check = async () => {
     const update = await checkForUpdate(cfg);
     if (update) {
-      console.log(`[auto-update] New version available: ${update.latestVersion}`);
+      console.log(
+        `[auto-update] New version available: ${update.latestVersion}`,
+      );
       // In a real app, emit event or show notification to user
       // For now, just log
     }

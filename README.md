@@ -105,19 +105,19 @@ Each folder is an isolated component with its own README, dependencies, and buil
 
 ## Technology Decisions
 
-| Decision              | Choice                                    | Reasoning                                                        |
-| --------------------- | ----------------------------------------- | ---------------------------------------------------------------- |
-| **Primary language**  | TypeScript (Node.js)                      | Cross-component consistency, strong typing, large ecosystem      |
-| **Engine runtime**    | Node.js + sql.js (SQLite)                 | Pure-JS SQLite, no native bindings, works everywhere             |
-| **CLI framework**     | Commander.js + Chalk + Ora                | Mature, composable, CJS-compatible                               |
-| **Desktop framework** | Electron 33                               | Full Node.js access, contextIsolation, proven ecosystem          |
-| **Backend**           | Express + Helmet + JWT + Zod              | Lightweight, well-understood, strong validation                  |
-| **State storage**     | SQLite via sql.js                         | Zero-config, single-file, battle-tested, no native deps          |
-| **Catalog format**    | YAML with JSON Schema validation          | Human-readable, diffable, familiar                               |
-| **Testing**           | Vitest + Supertest                        | Fast, ESM-ready, excellent DX                                    |
-| **CI/CD**             | GitHub Actions (Windows runners)          | Native Windows testing, matrix strategy                          |
-| **Packaging**         | NSIS + electron-builder                   | Per-user install, no admin, SmartScreen-ready                    |
-| **License**           | MIT                                       | See LICENSE file for reasoning                                   |
+| Decision              | Choice                           | Reasoning                                                   |
+| --------------------- | -------------------------------- | ----------------------------------------------------------- |
+| **Primary language**  | TypeScript (Node.js)             | Cross-component consistency, strong typing, large ecosystem |
+| **Engine runtime**    | Node.js + sql.js (SQLite)        | Pure-JS SQLite, no native bindings, works everywhere        |
+| **CLI framework**     | Commander.js + Chalk + Ora       | Mature, composable, CJS-compatible                          |
+| **Desktop framework** | Electron 33                      | Full Node.js access, contextIsolation, proven ecosystem     |
+| **Backend**           | Express + Helmet + JWT + Zod     | Lightweight, well-understood, strong validation             |
+| **State storage**     | SQLite via sql.js                | Zero-config, single-file, battle-tested, no native deps     |
+| **Catalog format**    | YAML with JSON Schema validation | Human-readable, diffable, familiar                          |
+| **Testing**           | Vitest + Supertest               | Fast, ESM-ready, excellent DX                               |
+| **CI/CD**             | GitHub Actions (Windows runners) | Native Windows testing, matrix strategy                     |
+| **Packaging**         | NSIS + electron-builder          | Per-user install, no admin, SmartScreen-ready               |
+| **License**           | MIT                              | See LICENSE file for reasoning                              |
 
 ---
 

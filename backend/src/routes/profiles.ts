@@ -8,11 +8,11 @@
  * DELETE /api/profiles/:id        — Delete a profile
  */
 
-import { Router, Request, Response } from 'express';
-import { v4 as uuid } from 'uuid';
-import { Database } from '../db';
-import { requireAuth } from '../auth';
-import { CreateProfileSchema, UpdateProfileSchema } from '../schemas';
+import { Router, Request, Response } from "express";
+import { v4 as uuid } from "uuid";
+import { Database } from "../db";
+import { requireAuth } from "../auth";
+import { CreateProfileSchema, UpdateProfileSchema } from "../schemas";
 
 export function profileRoutes(db: Database, jwtSecret: string): Router {
   const router = Router();
@@ -21,10 +21,12 @@ export function profileRoutes(db: Database, jwtSecret: string): Router {
   router.use(requireAuth(jwtSecret));
 
   // POST /api/profiles
-  router.post('/', (req: Request, res: Response) => {
+  router.post("/", (req: Request, res: Response) => {
     const parse = CreateProfileSchema.safeParse(req.body);
     if (!parse.success) {
-      res.status(400).json({ error: 'Validation failed', details: parse.error.flatten() });
+      res
+        .status(400)
+        .json({ error: "Validation failed", details: parse.error.flatten() });
       return;
     }
 
@@ -33,22 +35,35 @@ export function profileRoutes(db: Database, jwtSecret: string): Router {
     const id = uuid();
 
     db.run(
-      'INSERT INTO profiles (id, user_id, name, description, data) VALUES (?, ?, ?, ?, ?)',
-      [id, userId, name, description || '', JSON.stringify(data)]
+      "INSERT INTO profiles (id, user_id, name, description, data) VALUES (?, ?, ?, ?, ?)",
+      [id, userId, name, description || "", JSON.stringify(data)],
     );
     db.persist();
 
     res.status(201).json({
-      profile: { id, user_id: userId, name, description: description || '', data },
+      profile: {
+        id,
+        user_id: userId,
+        name,
+        description: description || "",
+        data,
+      },
     });
   });
 
   // GET /api/profiles
-  router.get('/', (req: Request, res: Response) => {
+  router.get("/", (req: Request, res: Response) => {
     const { userId } = (req as any).user;
-    const rows = db.getAll<{ id: string; name: string; description: string; data: string; created_at: string; updated_at: string }>(
-      'SELECT id, name, description, data, created_at, updated_at FROM profiles WHERE user_id = ? ORDER BY updated_at DESC',
-      [userId]
+    const rows = db.getAll<{
+      id: string;
+      name: string;
+      description: string;
+      data: string;
+      created_at: string;
+      updated_at: string;
+    }>(
+      "SELECT id, name, description, data, created_at, updated_at FROM profiles WHERE user_id = ? ORDER BY updated_at DESC",
+      [userId],
     );
 
     const profiles = rows.map((r) => ({
@@ -60,15 +75,23 @@ export function profileRoutes(db: Database, jwtSecret: string): Router {
   });
 
   // GET /api/profiles/:id
-  router.get('/:id', (req: Request, res: Response) => {
+  router.get("/:id", (req: Request, res: Response) => {
     const { userId } = (req as any).user;
-    const row = db.getOne<{ id: string; user_id: string; name: string; description: string; data: string; created_at: string; updated_at: string }>(
-      'SELECT * FROM profiles WHERE id = ? AND user_id = ?',
-      [req.params.id, userId]
-    );
+    const row = db.getOne<{
+      id: string;
+      user_id: string;
+      name: string;
+      description: string;
+      data: string;
+      created_at: string;
+      updated_at: string;
+    }>("SELECT * FROM profiles WHERE id = ? AND user_id = ?", [
+      req.params.id,
+      userId,
+    ]);
 
     if (!row) {
-      res.status(404).json({ error: 'Profile not found' });
+      res.status(404).json({ error: "Profile not found" });
       return;
     }
 
@@ -78,21 +101,23 @@ export function profileRoutes(db: Database, jwtSecret: string): Router {
   });
 
   // PUT /api/profiles/:id
-  router.put('/:id', (req: Request, res: Response) => {
+  router.put("/:id", (req: Request, res: Response) => {
     const parse = UpdateProfileSchema.safeParse(req.body);
     if (!parse.success) {
-      res.status(400).json({ error: 'Validation failed', details: parse.error.flatten() });
+      res
+        .status(400)
+        .json({ error: "Validation failed", details: parse.error.flatten() });
       return;
     }
 
     const { userId } = (req as any).user;
     const existing = db.getOne<{ id: string }>(
-      'SELECT id FROM profiles WHERE id = ? AND user_id = ?',
-      [req.params.id, userId]
+      "SELECT id FROM profiles WHERE id = ? AND user_id = ?",
+      [req.params.id, userId],
     );
 
     if (!existing) {
-      res.status(404).json({ error: 'Profile not found' });
+      res.status(404).json({ error: "Profile not found" });
       return;
     }
 
@@ -100,15 +125,15 @@ export function profileRoutes(db: Database, jwtSecret: string): Router {
     const params: unknown[] = [];
 
     if (parse.data.name !== undefined) {
-      updates.push('name = ?');
+      updates.push("name = ?");
       params.push(parse.data.name);
     }
     if (parse.data.description !== undefined) {
-      updates.push('description = ?');
+      updates.push("description = ?");
       params.push(parse.data.description);
     }
     if (parse.data.data !== undefined) {
-      updates.push('data = ?');
+      updates.push("data = ?");
       params.push(JSON.stringify(parse.data.data));
     }
 
@@ -117,17 +142,25 @@ export function profileRoutes(db: Database, jwtSecret: string): Router {
       params.push(req.params.id, userId);
 
       db.run(
-        `UPDATE profiles SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`,
-        params
+        `UPDATE profiles SET ${updates.join(", ")} WHERE id = ? AND user_id = ?`,
+        params,
       );
       db.persist();
     }
 
     // Fetch updated
-    const updated = db.getOne<{ id: string; user_id: string; name: string; description: string; data: string; created_at: string; updated_at: string }>(
-      'SELECT * FROM profiles WHERE id = ? AND user_id = ?',
-      [req.params.id, userId]
-    );
+    const updated = db.getOne<{
+      id: string;
+      user_id: string;
+      name: string;
+      description: string;
+      data: string;
+      created_at: string;
+      updated_at: string;
+    }>("SELECT * FROM profiles WHERE id = ? AND user_id = ?", [
+      req.params.id,
+      userId,
+    ]);
 
     res.json({
       profile: { ...updated, data: JSON.parse((updated as any).data) },
@@ -135,19 +168,22 @@ export function profileRoutes(db: Database, jwtSecret: string): Router {
   });
 
   // DELETE /api/profiles/:id
-  router.delete('/:id', (req: Request, res: Response) => {
+  router.delete("/:id", (req: Request, res: Response) => {
     const { userId } = (req as any).user;
     const existing = db.getOne<{ id: string }>(
-      'SELECT id FROM profiles WHERE id = ? AND user_id = ?',
-      [req.params.id, userId]
+      "SELECT id FROM profiles WHERE id = ? AND user_id = ?",
+      [req.params.id, userId],
     );
 
     if (!existing) {
-      res.status(404).json({ error: 'Profile not found' });
+      res.status(404).json({ error: "Profile not found" });
       return;
     }
 
-    db.run('DELETE FROM profiles WHERE id = ? AND user_id = ?', [req.params.id, userId]);
+    db.run("DELETE FROM profiles WHERE id = ? AND user_id = ?", [
+      req.params.id,
+      userId,
+    ]);
     db.persist();
 
     res.status(204).send();

@@ -5,15 +5,15 @@
  * Supports both in-memory (for tests) and file-backed modes.
  */
 
-import initSqlJs, { Database as SqlJsDatabase } from 'sql.js';
-import * as fs from 'fs';
-import * as path from 'path';
+import initSqlJs, { Database as SqlJsDatabase } from "sql.js";
+import * as fs from "fs";
+import * as path from "path";
 
 export class Database {
   private db: SqlJsDatabase | null = null;
   private dbPath: string;
 
-  constructor(dbPath: string = '') {
+  constructor(dbPath: string = "") {
     this.dbPath = dbPath;
   }
 
@@ -87,15 +87,22 @@ export class Database {
     `);
 
     // Indexes
-    db.run('CREATE INDEX IF NOT EXISTS idx_profiles_user ON profiles(user_id)');
-    db.run('CREATE INDEX IF NOT EXISTS idx_machines_user ON machines(user_id)');
-    db.run('CREATE INDEX IF NOT EXISTS idx_history_user ON install_history(user_id)');
-    db.run('CREATE INDEX IF NOT EXISTS idx_history_machine ON install_history(machine_id)');
-    db.run('CREATE INDEX IF NOT EXISTS idx_history_app ON install_history(app_id)');
+    db.run("CREATE INDEX IF NOT EXISTS idx_profiles_user ON profiles(user_id)");
+    db.run("CREATE INDEX IF NOT EXISTS idx_machines_user ON machines(user_id)");
+    db.run(
+      "CREATE INDEX IF NOT EXISTS idx_history_user ON install_history(user_id)",
+    );
+    db.run(
+      "CREATE INDEX IF NOT EXISTS idx_history_machine ON install_history(machine_id)",
+    );
+    db.run(
+      "CREATE INDEX IF NOT EXISTS idx_history_app ON install_history(app_id)",
+    );
   }
 
   private getDb(): SqlJsDatabase {
-    if (!this.db) throw new Error('Database not initialized. Call init() first.');
+    if (!this.db)
+      throw new Error("Database not initialized. Call init() first.");
     return this.db;
   }
 
@@ -113,7 +120,10 @@ export class Database {
   /**
    * Query a single row.
    */
-  getOne<T = Record<string, unknown>>(sql: string, params: unknown[] = []): T | null {
+  getOne<T = Record<string, unknown>>(
+    sql: string,
+    params: unknown[] = [],
+  ): T | null {
     const db = this.getDb();
     const stmt = db.prepare(sql);
     stmt.bind(params as any[]);
@@ -131,7 +141,10 @@ export class Database {
   /**
    * Query multiple rows.
    */
-  getAll<T = Record<string, unknown>>(sql: string, params: unknown[] = []): T[] {
+  getAll<T = Record<string, unknown>>(
+    sql: string,
+    params: unknown[] = [],
+  ): T[] {
     const db = this.getDb();
     const stmt = db.prepare(sql);
     stmt.bind(params as any[]);

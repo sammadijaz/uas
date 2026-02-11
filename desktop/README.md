@@ -25,12 +25,12 @@ desktop/
 
 ## Views
 
-| View | Description |
-|---|---|
-| **Catalog** | Browse all recipes, search, filter by category |
-| **Profiles** | List and inspect curated profiles |
+| View          | Description                                              |
+| ------------- | -------------------------------------------------------- |
+| **Catalog**   | Browse all recipes, search, filter by category           |
+| **Profiles**  | List and inspect curated profiles                        |
 | **Installed** | View installed apps (placeholder for engine integration) |
-| **Settings** | System info and UAS paths |
+| **Settings**  | System info and UAS paths                                |
 
 ## Security Model
 

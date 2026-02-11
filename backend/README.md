@@ -30,25 +30,25 @@ backend/
 
 ## API Endpoints
 
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| GET | `/api/health` | No | Service health check |
-| POST | `/api/auth/register` | No | Create account |
-| POST | `/api/auth/login` | No | Login, get JWT |
-| GET | `/api/auth/me` | Yes | Current user info |
-| POST | `/api/profiles` | Yes | Create profile |
-| GET | `/api/profiles` | Yes | List user profiles |
-| GET | `/api/profiles/:id` | Yes | Get profile |
-| PUT | `/api/profiles/:id` | Yes | Update profile |
-| DELETE | `/api/profiles/:id` | Yes | Delete profile |
-| POST | `/api/machines` | Yes | Register machine |
-| GET | `/api/machines` | Yes | List machines |
-| GET | `/api/machines/:id` | Yes | Get machine |
-| DELETE | `/api/machines/:id` | Yes | Unregister machine |
-| POST | `/api/history` | Yes | Record install event |
-| GET | `/api/history` | Yes | List install history |
-| GET | `/api/history/machine/:id` | Yes | History by machine |
-| GET | `/api/history/app/:appId` | Yes | History by app |
+| Method | Endpoint                   | Auth | Description          |
+| ------ | -------------------------- | ---- | -------------------- |
+| GET    | `/api/health`              | No   | Service health check |
+| POST   | `/api/auth/register`       | No   | Create account       |
+| POST   | `/api/auth/login`          | No   | Login, get JWT       |
+| GET    | `/api/auth/me`             | Yes  | Current user info    |
+| POST   | `/api/profiles`            | Yes  | Create profile       |
+| GET    | `/api/profiles`            | Yes  | List user profiles   |
+| GET    | `/api/profiles/:id`        | Yes  | Get profile          |
+| PUT    | `/api/profiles/:id`        | Yes  | Update profile       |
+| DELETE | `/api/profiles/:id`        | Yes  | Delete profile       |
+| POST   | `/api/machines`            | Yes  | Register machine     |
+| GET    | `/api/machines`            | Yes  | List machines        |
+| GET    | `/api/machines/:id`        | Yes  | Get machine          |
+| DELETE | `/api/machines/:id`        | Yes  | Unregister machine   |
+| POST   | `/api/history`             | Yes  | Record install event |
+| GET    | `/api/history`             | Yes  | List install history |
+| GET    | `/api/history/machine/:id` | Yes  | History by machine   |
+| GET    | `/api/history/app/:appId`  | Yes  | History by app       |
 
 ## Technology
 

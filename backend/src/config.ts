@@ -23,12 +23,14 @@ export interface Config {
 
 export function loadConfig(): Config {
   return {
-    port: parseInt(process.env.UAS_PORT || '3100', 10),
-    env: process.env.NODE_ENV || 'development',
-    jwtSecret: process.env.UAS_JWT_SECRET || 'uas-dev-secret-change-me',
-    jwtExpiry: process.env.UAS_JWT_EXPIRY || '7d',
-    dbPath: process.env.UAS_DB_PATH || '',
-    corsOrigins: (process.env.UAS_CORS_ORIGINS || '*').split(',').map((s) => s.trim()),
-    logLevel: process.env.UAS_LOG_LEVEL || 'info',
+    port: parseInt(process.env.UAS_PORT || "3100", 10),
+    env: process.env.NODE_ENV || "development",
+    jwtSecret: process.env.UAS_JWT_SECRET || "uas-dev-secret-change-me",
+    jwtExpiry: process.env.UAS_JWT_EXPIRY || "7d",
+    dbPath: process.env.UAS_DB_PATH || "",
+    corsOrigins: (process.env.UAS_CORS_ORIGINS || "*")
+      .split(",")
+      .map((s) => s.trim()),
+    logLevel: process.env.UAS_LOG_LEVEL || "info",
   };
 }
