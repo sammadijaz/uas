@@ -1,0 +1,30 @@
+# UAS — Development Stack
+# Runs the backend API server in a Docker container.
+# Usage: docker compose up
+
+services:
+  backend:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile
+    ports:
+      - "3100:3100"
+    environment:
+      UAS_PORT: "3100"
+      UAS_JWT_SECRET: "dev-secret-change-in-production"
+      UAS_JWT_EXPIRY: "24h"
+      UAS_DB_PATH: "/data/uas.db"
+      UAS_CORS_ORIGIN: "*"
+      UAS_LOG_LEVEL: "debug"
+    volumes:
+      - uas-data:/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3100/api/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  uas-data:
+    driver: local

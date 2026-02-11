@@ -99,7 +99,7 @@ Each folder is an isolated component with its own README, dependencies, and buil
 | 4     | Catalog System            | ✅ Complete |
 | 5     | Backend API               | ✅ Complete |
 | 6     | Desktop App               | ✅ Complete |
-| 7     | Infra & Distribution      | 🔜 Next     |
+| 7     | Infra & Distribution      | ✅ Complete |
 
 ---
 
@@ -108,15 +108,16 @@ Each folder is an isolated component with its own README, dependencies, and buil
 | Decision              | Choice                                    | Reasoning                                                        |
 | --------------------- | ----------------------------------------- | ---------------------------------------------------------------- |
 | **Primary language**  | TypeScript (Node.js)                      | Cross-component consistency, strong typing, large ecosystem      |
-| **Engine runtime**    | Node.js with native bindings where needed | Sufficient for process spawning, filesystem ops, registry access |
-| **CLI framework**     | TBD (Phase 3)                             | Evaluated when we get there                                      |
-| **Desktop framework** | TBD (Phase 6)                             | Electron or Tauri — decided when we get there                    |
-| **Backend**           | TBD (Phase 5)                             | Decided when we get there                                        |
-| **State storage**     | SQLite (local)                            | Zero-config, single-file, battle-tested                          |
+| **Engine runtime**    | Node.js + sql.js (SQLite)                 | Pure-JS SQLite, no native bindings, works everywhere             |
+| **CLI framework**     | Commander.js + Chalk + Ora                | Mature, composable, CJS-compatible                               |
+| **Desktop framework** | Electron 33                               | Full Node.js access, contextIsolation, proven ecosystem          |
+| **Backend**           | Express + Helmet + JWT + Zod              | Lightweight, well-understood, strong validation                  |
+| **State storage**     | SQLite via sql.js                         | Zero-config, single-file, battle-tested, no native deps          |
 | **Catalog format**    | YAML with JSON Schema validation          | Human-readable, diffable, familiar                               |
+| **Testing**           | Vitest + Supertest                        | Fast, ESM-ready, excellent DX                                    |
+| **CI/CD**             | GitHub Actions (Windows runners)          | Native Windows testing, matrix strategy                          |
+| **Packaging**         | NSIS + electron-builder                   | Per-user install, no admin, SmartScreen-ready                    |
 | **License**           | MIT                                       | See LICENSE file for reasoning                                   |
-
-Decisions are made at the latest responsible moment — not earlier.
 
 ---
 

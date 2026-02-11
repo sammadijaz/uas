@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.db
+*.log
+.env
+.env.*
+*.tgz
+release/
+infra/docker/
+.git

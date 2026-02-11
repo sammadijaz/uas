@@ -1,0 +1,33 @@
+{
+  "autoUpdate": {
+    "enabled": true,
+    "repo": "user/uas",
+    "checkInterval": 14400000,
+    "assetPattern": "uas-setup-{version}.exe",
+    "channels": {
+      "stable": {
+        "prerelease": false
+      },
+      "beta": {
+        "prerelease": true,
+        "assetPattern": "uas-setup-{version}-beta.exe"
+      }
+    }
+  },
+  "signing": {
+    "enabled": false,
+    "provider": "windows",
+    "certificateSubjectName": "",
+    "timestampServer": "http://timestamp.digicert.com",
+    "notes": "Enable after obtaining a code-signing certificate. Required for SmartScreen trust."
+  },
+  "release": {
+    "draft": true,
+    "generateReleaseNotes": true,
+    "assets": [
+      "uas-setup-{version}.exe",
+      "uas-cli-{version}.tgz",
+      "CHANGELOG.md"
+    ]
+  }
+}

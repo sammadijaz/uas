@@ -1,0 +1,65 @@
+# UAS CI/CD — Build & Test
+# Runs on all PRs and pushes to main.
+# Tests all packages: engine, cli, catalog, backend, desktop.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test (${{ matrix.package }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [engine, cli, catalog, backend, desktop]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies (${{ matrix.package }})
+        working-directory: ${{ matrix.package }}
+        run: npm ci || npm install
+
+      - name: Build (${{ matrix.package }})
+        working-directory: ${{ matrix.package }}
+        run: npm run build
+
+      - name: Test (${{ matrix.package }})
+        working-directory: ${{ matrix.package }}
+        run: npm test
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check TypeScript (engine)
+        working-directory: engine
+        run: npm ci || npm install && npx tsc --noEmit
+
+      - name: Check TypeScript (backend)
+        working-directory: backend
+        run: npm ci || npm install && npx tsc --noEmit
+
+      - name: Check TypeScript (catalog)
+        working-directory: catalog
+        run: npm ci || npm install && npx tsc --noEmit

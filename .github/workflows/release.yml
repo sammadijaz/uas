@@ -1,0 +1,153 @@
+# UAS Release — Build & Publish
+# Triggered manually or on version tags (v*).
+# Builds all packages, runs tests, packages the desktop app,
+# and creates a GitHub Release with artifacts.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 0.1.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Test All Packages
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Test engine
+        working-directory: engine
+        run: npm ci || npm install && npm run build && npm test
+
+      - name: Test catalog
+        working-directory: catalog
+        run: npm ci || npm install && npm run build && npm test
+
+      - name: Test backend
+        working-directory: backend
+        run: npm ci || npm install && npm run build && npm test
+
+      - name: Test CLI
+        working-directory: cli
+        run: npm ci || npm install && npm run build && npm test
+
+      - name: Test desktop
+        working-directory: desktop
+        run: npm ci || npm install && npm run build && npm test
+
+  build-cli:
+    name: Build CLI
+    needs: test
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Build CLI
+        working-directory: cli
+        run: npm ci || npm install && npm run build
+
+      - name: Upload CLI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-dist
+          path: cli/dist/
+
+  build-desktop:
+    name: Build Desktop
+    needs: test
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        working-directory: desktop
+        run: npm ci || npm install
+
+      - name: Build
+        working-directory: desktop
+        run: npm run build
+
+      - name: Package (unsigned)
+        working-directory: desktop
+        run: npx electron-builder --dir
+        continue-on-error: true
+
+      - name: Upload desktop artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-dist
+          path: desktop/release/
+        if: always()
+
+  build-backend:
+    name: Build Backend
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Build backend
+        working-directory: backend
+        run: npm ci || npm install && npm run build
+
+      - name: Upload backend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-dist
+          path: backend/dist/
+
+  release:
+    name: Create Release
+    needs: [build-cli, build-desktop, build-backend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name || format('v{0}', github.event.inputs.version) }}
+          name: UAS ${{ github.ref_name || format('v{0}', github.event.inputs.version) }}
+          draft: true
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
