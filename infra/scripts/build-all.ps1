@@ -9,8 +9,6 @@ param(
     [switch]$Verbose
 )
 
-$ErrorActionPreference = "Stop"
-
 $root = Resolve-Path (Join-Path $PSScriptRoot "../..")
 $packages = @("engine", "catalog", "cli", "backend")
 if (-not $SkipDesktop) {
@@ -34,30 +32,35 @@ Write-Host ""
 foreach ($pkg in $packages) {
     $dir = Join-Path $root $pkg
     if (-not (Test-Path $dir)) {
-        Write-Status $pkg "SKIP — directory not found" "DarkGray"
+        Write-Status $pkg "SKIP - directory not found" "DarkGray"
         continue
     }
 
-    Write-Status $pkg "Installing..." "White"
     Push-Location $dir
-    try {
-        & npm install --loglevel error 2>&1 | ForEach-Object { if ($Verbose) { Write-Host "  $_" } }
-        if ($LASTEXITCODE -ne 0) { throw "npm install failed" }
 
-        Write-Status $pkg "Building..." "White"
-        & npm run build 2>&1 | ForEach-Object { if ($Verbose) { Write-Host "  $_" } }
-        if ($LASTEXITCODE -ne 0) { throw "npm run build failed" }
-
-        Write-Status $pkg "OK" "Green"
-        $passed += $pkg
-    }
-    catch {
-        Write-Status $pkg "FAIL — $_" "Red"
+    Write-Status $pkg "Installing..." "White"
+    $installOutput = & npm install --loglevel error 2>&1
+    if ($Verbose) { $installOutput | ForEach-Object { Write-Host "  $_" } }
+    if ($LASTEXITCODE -ne 0) {
+        Write-Status $pkg "FAIL - npm install failed" "Red"
         $failed += $pkg
-    }
-    finally {
         Pop-Location
+        continue
     }
+
+    Write-Status $pkg "Building..." "White"
+    $buildOutput = & npm run build 2>&1
+    if ($Verbose) { $buildOutput | ForEach-Object { Write-Host "  $_" } }
+    if ($LASTEXITCODE -ne 0) {
+        Write-Status $pkg "FAIL - npm run build failed" "Red"
+        $failed += $pkg
+        Pop-Location
+        continue
+    }
+
+    Write-Status $pkg "OK" "Green"
+    $passed += $pkg
+    Pop-Location
 }
 
 Write-Host ""

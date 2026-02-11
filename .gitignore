@@ -159,6 +159,9 @@ downloads/
 dist/
 out/
 
+# Private developer notes (not pushed to GitHub)
+dev/
+
 # IDE
 .vscode/settings.json
 .idea/
