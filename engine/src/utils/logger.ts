@@ -7,6 +7,9 @@
  * When verbose=false (default), logging is silent -- no JSON logs are
  * emitted to stdout. This ensures CLI users only see clean output.
  * When verbose=true (--debug mode), structured logs go to stderr.
+ *
+ * NOTE: We use pino.destination() instead of pino transports because
+ * transports spawn worker_threads which break inside esbuild bundles.
  */
 
 import pino from "pino";
@@ -26,21 +29,24 @@ export function createLogger(
 ): pino.Logger {
   const opts = { ...DEFAULT_OPTIONS, ...options };
 
-  return pino({
-    level: opts.level,
-    transport: opts.pretty
-      ? {
-          target: "pino/file",
-          options: { destination: 2 }, // stderr (not stdout)
-        }
-      : undefined,
-    formatters: {
-      level(label: string) {
-        return { level: label };
+  // Use pino.destination() for synchronous I/O — no worker_threads.
+  // This is bundle-safe and works identically when published to npm.
+  const dest = opts.pretty
+    ? pino.destination({ fd: 2, sync: true }) // stderr
+    : undefined;
+
+  return pino(
+    {
+      level: opts.level,
+      formatters: {
+        level(label: string) {
+          return { level: label };
+        },
       },
+      timestamp: pino.stdTimeFunctions.isoTime,
     },
-    timestamp: pino.stdTimeFunctions.isoTime,
-  });
+    dest ?? pino.destination({ fd: 2, sync: true }),
+  );
 }
 
 export type Logger = pino.Logger;

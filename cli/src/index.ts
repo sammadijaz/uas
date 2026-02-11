@@ -51,7 +51,7 @@ program
   .description(
     "Universal App Store -- install, save, and restore your entire dev environment",
   )
-  .version("0.1.0", "-V, --version", "Print the UAS version")
+  .version("0.1.1", "-V, --version", "Print the UAS version")
   .option("--debug", "Show verbose debug output")
   .hook("preAction", (_thisCommand, _actionCommand) => {
     const opts = program.opts();

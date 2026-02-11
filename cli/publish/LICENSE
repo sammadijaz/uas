@@ -1,0 +1,48 @@
+MIT License
+
+Copyright (c) 2026 Universal App Store Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+License Reasoning:
+
+MIT was chosen because:
+
+1. SIMPLICITY — MIT is the most widely understood open-source license.
+   Contributors and users don't need a lawyer to understand their rights.
+
+2. PERMISSIVENESS — UAS is an environment setup tool. Restricting how people
+   use it (copyleft) would limit adoption in corporate environments where
+   developers need it most.
+
+3. ECOSYSTEM COMPATIBILITY — Most of our likely dependencies (Node.js
+   ecosystem, Electron/Tauri) are MIT or similarly permissive. No license
+   conflict risk.
+
+4. COMMUNITY GROWTH — Permissive licensing encourages forks, integrations,
+   and contributions without legal friction.
+
+Alternatives considered:
+
+- Apache 2.0: Patent clause is nice but adds complexity we don't need yet.
+- GPL/AGPL: Would reduce corporate adoption. UAS is a tool, not a library
+  that needs copyleft protection.
+- ISC: Equivalent to MIT but less recognized.
