@@ -34,14 +34,15 @@
 
 ## Prerequisites
 
-| Tool | Version | Why |
-|------|---------|-----|
-| **Node.js** | ≥ 20.0.0 | Runtime for all components |
-| **npm** | ≥ 10 | Package management (ships with Node.js) |
-| **Git** | ≥ 2.30 | Version control |
-| **Windows 10/11** | Build 19041+ | Target platform |
+| Tool              | Version      | Why                                     |
+| ----------------- | ------------ | --------------------------------------- |
+| **Node.js**       | ≥ 20.0.0     | Runtime for all components              |
+| **npm**           | ≥ 10         | Package management (ships with Node.js) |
+| **Git**           | ≥ 2.30       | Version control                         |
+| **Windows 10/11** | Build 19041+ | Target platform                         |
 
 **Optional:**
+
 - **Docker** — for backend containerized deployment
 - **NSIS 3.x** — for building the Windows installer
 - **Code signing certificate** — for SmartScreen trust (production only)
@@ -207,9 +208,9 @@ npm run dev    # Recompiles on file changes
 The engine is a library — it's consumed by the CLI and desktop app, not run directly.
 
 ```typescript
-import { UasEngine } from '@uas/engine';
+import { UasEngine } from "@uas/engine";
 
-const engine = await UasEngine.create({ dbPath: './uas-state.db' });
+const engine = await UasEngine.create({ dbPath: "./uas-state.db" });
 
 // Install an app
 await engine.install(recipe, { dryRun: true });
@@ -278,21 +279,21 @@ node dist/validate.js recipes/node/recipe.yaml
 **Using the catalog API:**
 
 ```typescript
-import { Catalog } from '@uas/catalog';
+import { Catalog } from "@uas/catalog";
 
-const catalog = new Catalog('./catalog');
+const catalog = new Catalog("./catalog");
 
 // List all recipes
 const all = catalog.list();
 
 // Search
-const results = catalog.search('javascript');
+const results = catalog.search("javascript");
 
 // Filter by category
-const devTools = catalog.filterByCategory('development');
+const devTools = catalog.filterByCategory("development");
 
 // Load a profile
-const profile = catalog.loadProfile('frontend-dev');
+const profile = catalog.loadProfile("frontend-dev");
 ```
 
 ### 4. Backend API
@@ -305,14 +306,14 @@ node dist/server.js
 
 **Environment variables:**
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `UAS_PORT` | `3100` | HTTP port |
-| `UAS_JWT_SECRET` | `uas-dev-secret-...` | JWT signing secret |
-| `UAS_JWT_EXPIRY` | `24h` | Token expiration |
-| `UAS_DB_PATH` | `./data/uas.db` | SQLite database path |
-| `UAS_CORS_ORIGIN` | `*` | Allowed CORS origins |
-| `UAS_LOG_LEVEL` | `info` | Log verbosity |
+| Variable          | Default              | Description          |
+| ----------------- | -------------------- | -------------------- |
+| `UAS_PORT`        | `3100`               | HTTP port            |
+| `UAS_JWT_SECRET`  | `uas-dev-secret-...` | JWT signing secret   |
+| `UAS_JWT_EXPIRY`  | `24h`                | Token expiration     |
+| `UAS_DB_PATH`     | `./data/uas.db`      | SQLite database path |
+| `UAS_CORS_ORIGIN` | `*`                  | Allowed CORS origins |
+| `UAS_LOG_LEVEL`   | `info`               | Log verbosity        |
 
 **API Endpoints:**
 
@@ -365,6 +366,7 @@ npx electron .
 ```
 
 The desktop app provides:
+
 - **Catalog Browser** — search, filter by category, view app details
 - **Profile Manager** — browse and inspect profiles
 - **Installed Apps** — view what's on this machine
@@ -392,6 +394,7 @@ npm run test:watch
 **Total: 117 tests across 5 packages.**
 
 Test breakdown:
+
 - **Engine**: Variables/template expansion, recipe verification, state DB operations, install/uninstall lifecycle, rollback
 - **Catalog**: JSON Schema validation (10), semantic rules (6), catalog loader/indexer (14), profile loading (4), sample recipe validation (6)
 - **CLI**: Command parsing, help output, version flag, error handling
@@ -417,16 +420,16 @@ description: A useful development tool.
 license: MIT
 
 installer:
-  type: exe                          # exe, msi, zip, or portable
+  type: exe # exe, msi, zip, or portable
   url: https://example.com/my-tool-2.0.0-setup.exe
-  sha256: abc123...                  # Checksum for integrity
-  silent_args: "/S"                  # Silent install flags
+  sha256: abc123... # Checksum for integrity
+  silent_args: "/S" # Silent install flags
   size_bytes: 15000000
 
 requirements:
   os: windows
   arch: x64
-  admin: false                       # Does it need admin rights?
+  admin: false # Does it need admin rights?
   min_os_version: "10.0.19041"
   disk_space_mb: 100
   dependencies: []
@@ -545,11 +548,11 @@ docker compose down
 services:
   backend:
     environment:
-      UAS_JWT_SECRET: "${UAS_JWT_SECRET}"   # Set via .env or CI secrets
+      UAS_JWT_SECRET: "${UAS_JWT_SECRET}" # Set via .env or CI secrets
       UAS_CORS_ORIGIN: "https://your-domain.com"
       UAS_LOG_LEVEL: "warn"
     volumes:
-      - /var/data/uas:/data                 # Persistent storage
+      - /var/data/uas:/data # Persistent storage
     restart: always
 ```
 
@@ -584,12 +587,14 @@ pm2 startup
 ### Cloud Deployment
 
 **Azure App Service:**
+
 ```powershell
 # Build and deploy
 az webapp up --name uas-backend --runtime "NODE:22-lts"
 ```
 
 **AWS (EC2 / ECS):**
+
 ```powershell
 # Build Docker image
 docker build -f infra/docker/Dockerfile -t uas-backend .
@@ -598,6 +603,7 @@ docker push <account>.dkr.ecr.<region>.amazonaws.com/uas-backend
 ```
 
 **Railway / Render / Fly.io:**
+
 - Point to the repo, set `infra/docker/Dockerfile` as the Dockerfile path
 - Set environment variables in the dashboard
 - Deploy
@@ -707,17 +713,17 @@ Tag v* → Test All → Build CLI  ──┐
 
 ## Security Considerations
 
-| Concern | Mitigation |
-|---------|-----------|
-| **Unsigned binaries** | SmartScreen blocks them; use code signing for production |
-| **JWT secrets** | Never commit secrets; use environment variables |
-| **SQL injection** | All queries use parameterized statements via sql.js |
-| **XSS in desktop** | Electron `contextIsolation: true`, CSP headers, `escapeHtml()` |
-| **CORS** | Configurable origins; lock down in production |
-| **Password storage** | bcrypt with 10 salt rounds; never stored in plaintext |
-| **Installer integrity** | SHA256 checksums in recipes; verify before execution |
-| **Auto-updates** | Only from configured GitHub repository; semver comparison |
-| **Admin privileges** | Per-user install by default; admin only when recipe requires it |
+| Concern                 | Mitigation                                                      |
+| ----------------------- | --------------------------------------------------------------- |
+| **Unsigned binaries**   | SmartScreen blocks them; use code signing for production        |
+| **JWT secrets**         | Never commit secrets; use environment variables                 |
+| **SQL injection**       | All queries use parameterized statements via sql.js             |
+| **XSS in desktop**      | Electron `contextIsolation: true`, CSP headers, `escapeHtml()`  |
+| **CORS**                | Configurable origins; lock down in production                   |
+| **Password storage**    | bcrypt with 10 salt rounds; never stored in plaintext           |
+| **Installer integrity** | SHA256 checksums in recipes; verify before execution            |
+| **Auto-updates**        | Only from configured GitHub repository; semver comparison       |
+| **Admin privileges**    | Per-user install by default; admin only when recipe requires it |
 
 See [docs/security-model.md](docs/security-model.md) for the full threat model.
 
@@ -817,18 +823,18 @@ A: Every install is tracked in the state DB with a unique ID. The engine records
 
 UAS is at v0.1.0. Here's the roadmap:
 
-| Priority | Feature | Status |
-|----------|---------|--------|
-| High | Real installer execution (not just dry-run) | Planned |
-| High | `uas sync` cloud synchronization | Stub ready |
-| Medium | Catalog auto-update from Git | Planned |
-| Medium | Desktop app install/uninstall integration | Planned |
-| Medium | Recipe dependency resolution | Planned |
-| Low | Cross-platform support (macOS, Linux) | Future |
-| Low | Plugin system for custom executors | Future |
-| Low | Web dashboard | Future |
+| Priority | Feature                                     | Status     |
+| -------- | ------------------------------------------- | ---------- |
+| High     | Real installer execution (not just dry-run) | Planned    |
+| High     | `uas sync` cloud synchronization            | Stub ready |
+| Medium   | Catalog auto-update from Git                | Planned    |
+| Medium   | Desktop app install/uninstall integration   | Planned    |
+| Medium   | Recipe dependency resolution                | Planned    |
+| Low      | Cross-platform support (macOS, Linux)       | Future     |
+| Low      | Plugin system for custom executors          | Future     |
+| Low      | Web dashboard                               | Future     |
 
 ---
 
-*Built with TypeScript, tested with Vitest, automated with GitHub Actions.*
-*117 tests. Zero external services required. Works offline.*
+_Built with TypeScript, tested with Vitest, automated with GitHub Actions._
+_117 tests. Zero external services required. Works offline._

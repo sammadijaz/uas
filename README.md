@@ -9,8 +9,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A520-green)](https://nodejs.org/)
 
-*Define your entire dev environment as a portable profile.*
-*Install it on any Windows machine with a single command.*
+_Define your entire dev environment as a portable profile._
+_Install it on any Windows machine with a single command._
 
 [Getting Started](GUIDE.md) · [API Docs](backend/README.md) · [Contributing](CONTRIBUTING.md) · [Architecture](docs/architecture.md)
 
@@ -64,7 +64,7 @@ cd uas
 | **CLI**            | `uas install node`, `uas profile apply dev`, `uas sync`                     |
 | **Desktop App**    | Browse catalog, manage profiles, trigger installs — Electron-powered        |
 | **Web Backend**    | Auth, profile storage, install history — REST API with JWT                  |
-| **App Catalog**    | Community-maintained recipes with JSON Schema + semantic validation          |
+| **App Catalog**    | Community-maintained recipes with JSON Schema + semantic validation         |
 | **Profiles**       | Declarative manifests: tools + versions + config in one YAML file           |
 | **Rollback**       | Every install tracked; undo any change with full state reversal             |
 | **Cloud Sync**     | Push/pull your environment across machines via the backend API              |
@@ -73,13 +73,13 @@ cd uas
 
 ## Boundaries
 
-| Non-Goal                        | Reason                                                                      |
-| ------------------------------- | --------------------------------------------------------------------------- |
-| A package manager replacement   | We delegate to existing installers; we orchestrate, not compile             |
-| Linux/macOS support (initially) | Windows-first by design. Cross-platform is a future goal                    |
-| A configuration management tool | We install software; we don't manage dotfiles or OS settings                |
-| A container runtime             | Containers solve isolation; UAS solves native Windows environment setup     |
-| An app store with payments      | No monetization. Open-source tool, MIT licensed                             |
+| Non-Goal                        | Reason                                                                  |
+| ------------------------------- | ----------------------------------------------------------------------- |
+| A package manager replacement   | We delegate to existing installers; we orchestrate, not compile         |
+| Linux/macOS support (initially) | Windows-first by design. Cross-platform is a future goal                |
+| A configuration management tool | We install software; we don't manage dotfiles or OS settings            |
+| A container runtime             | Containers solve isolation; UAS solves native Windows environment setup |
+| An app store with payments      | No monetization. Open-source tool, MIT licensed                         |
 
 ---
 
@@ -145,33 +145,33 @@ All 8 phases complete. The project is fully implemented and tested.
 
 ## Technology Stack
 
-| Layer               | Choice                           | Why                                                         |
-| ------------------- | -------------------------------- | ----------------------------------------------------------- |
-| **Language**        | TypeScript (strict, ES2022)      | Cross-component consistency, strong typing, large ecosystem |
-| **Runtime**         | Node.js ≥ 20                     | Process spawning, filesystem ops, registry access           |
-| **State DB**        | SQLite via sql.js                | Zero-config, single-file, no native deps, works everywhere  |
-| **CLI**             | Commander.js + Chalk + Ora       | Mature, composable, CJS-compatible                          |
-| **Desktop**         | Electron 33                      | Full Node.js access, contextIsolation, proven ecosystem     |
-| **Backend**         | Express + Helmet + JWT + Zod     | Lightweight, well-understood, strong validation             |
-| **Catalog**         | YAML + AJV (JSON Schema)        | Human-readable, diffable, schema-validated                  |
-| **Testing**         | Vitest + Supertest               | Fast, modern, excellent DX                                  |
-| **CI/CD**           | GitHub Actions (Windows runners) | Native Windows testing, matrix strategy                     |
-| **Packaging**       | NSIS + electron-builder          | Per-user install, no admin, SmartScreen-ready               |
-| **Containerization**| Docker (multi-stage)             | Backend deployment, reproducible builds                     |
+| Layer                | Choice                           | Why                                                         |
+| -------------------- | -------------------------------- | ----------------------------------------------------------- |
+| **Language**         | TypeScript (strict, ES2022)      | Cross-component consistency, strong typing, large ecosystem |
+| **Runtime**          | Node.js ≥ 20                     | Process spawning, filesystem ops, registry access           |
+| **State DB**         | SQLite via sql.js                | Zero-config, single-file, no native deps, works everywhere  |
+| **CLI**              | Commander.js + Chalk + Ora       | Mature, composable, CJS-compatible                          |
+| **Desktop**          | Electron 33                      | Full Node.js access, contextIsolation, proven ecosystem     |
+| **Backend**          | Express + Helmet + JWT + Zod     | Lightweight, well-understood, strong validation             |
+| **Catalog**          | YAML + AJV (JSON Schema)         | Human-readable, diffable, schema-validated                  |
+| **Testing**          | Vitest + Supertest               | Fast, modern, excellent DX                                  |
+| **CI/CD**            | GitHub Actions (Windows runners) | Native Windows testing, matrix strategy                     |
+| **Packaging**        | NSIS + electron-builder          | Per-user install, no admin, SmartScreen-ready               |
+| **Containerization** | Docker (multi-stage)             | Backend deployment, reproducible builds                     |
 
 ---
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| **[GUIDE.md](GUIDE.md)** | Complete getting started, deployment, and operations guide |
-| **[CONTRIBUTING.md](CONTRIBUTING.md)** | How to contribute code, recipes, and bug reports |
-| **[docs/architecture.md](docs/architecture.md)** | System design, component boundaries, data flow |
-| **[docs/security-model.md](docs/security-model.md)** | Trust boundaries, threat model, mitigations |
-| **[docs/glossary.md](docs/glossary.md)** | Canonical terminology used across UAS |
-| **[docs/specs/](docs/specs/)** | Formal specs: recipes, profiles, execution lifecycle |
-| **[catalog/CONTRIBUTING.md](catalog/CONTRIBUTING.md)** | How to write and submit install recipes |
+| Document                                               | Description                                                |
+| ------------------------------------------------------ | ---------------------------------------------------------- |
+| **[GUIDE.md](GUIDE.md)**                               | Complete getting started, deployment, and operations guide |
+| **[CONTRIBUTING.md](CONTRIBUTING.md)**                 | How to contribute code, recipes, and bug reports           |
+| **[docs/architecture.md](docs/architecture.md)**       | System design, component boundaries, data flow             |
+| **[docs/security-model.md](docs/security-model.md)**   | Trust boundaries, threat model, mitigations                |
+| **[docs/glossary.md](docs/glossary.md)**               | Canonical terminology used across UAS                      |
+| **[docs/specs/](docs/specs/)**                         | Formal specs: recipes, profiles, execution lifecycle       |
+| **[catalog/CONTRIBUTING.md](catalog/CONTRIBUTING.md)** | How to write and submit install recipes                    |
 
 ---
 

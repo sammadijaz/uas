@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 **Engine (Phase 2)**
+
 - Core installation engine with dry-run, execute, rollback lifecycle
 - SQLite state database via sql.js (zero native dependencies)
 - Recipe parser with YAML support and schema validation
@@ -21,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 25 unit tests
 
 **CLI (Phase 3)**
+
 - Commander.js-based command-line interface
 - Commands: `install`, `uninstall`, `status`, `search`, `profile apply|diff|export`
 - Stub commands: `sync`, `login` (backend integration pending)
@@ -29,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 12 unit tests
 
 **Catalog (Phase 4)**
+
 - JSON Schema for install recipes with conditional validation
 - AJV-based validator with 4 semantic rules
 - Catalog loader with lazy indexing, text search, category/tag filtering
@@ -40,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 40 unit tests
 
 **Backend API (Phase 5)**
+
 - Express 4 REST API with Helmet security headers
 - JWT authentication with bcrypt password hashing
 - Zod request validation on all endpoints
@@ -51,6 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 27 integration tests (Supertest)
 
 **Desktop App (Phase 6)**
+
 - Electron 33 with strict security (contextIsolation, CSP)
 - Catalog browser with search (200ms debounce) and category filtering
 - App detail modal with installer info, side effects, metadata
@@ -61,6 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 13 unit tests
 
 **Infrastructure (Phase 7)**
+
 - GitHub Actions CI pipeline (matrix: 5 packages on Windows)
 - GitHub Actions release pipeline (tag → build → draft release)
 - Build and test scripts (PowerShell + Bash)
@@ -72,6 +78,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update configuration with stable/beta channels
 
 **Documentation (Phases 0–1)**
+
 - Architecture document with component boundaries
 - Security model with trust boundaries and threat analysis
 - Glossary of canonical terminology
@@ -81,6 +88,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Per-component READMEs
 
 ### Project Stats
+
 - **5 packages**, all independently buildable and testable
 - **117 tests**, all passing
 - **0 external services required** — works completely offline

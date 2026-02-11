@@ -21,6 +21,7 @@ Be respectful. Be constructive. Focus on the work.
 ### Suggesting Features
 
 Open a discussion or issue with:
+
 - **Problem**: What pain point does this solve?
 - **Proposal**: How should it work?
 - **Alternatives**: What else was considered?
@@ -53,18 +54,19 @@ See [GUIDE.md](GUIDE.md) for detailed setup instructions.
 
 Format: `type(scope): description`
 
-| Type | When to use |
-|------|-------------|
-| `feat` | New feature |
-| `fix` | Bug fix |
-| `docs` | Documentation only |
-| `test` | Adding or fixing tests |
+| Type       | When to use                             |
+| ---------- | --------------------------------------- |
+| `feat`     | New feature                             |
+| `fix`      | Bug fix                                 |
+| `docs`     | Documentation only                      |
+| `test`     | Adding or fixing tests                  |
 | `refactor` | Code change that's not a fix or feature |
-| `chore` | Build, CI, tooling changes |
+| `chore`    | Build, CI, tooling changes              |
 
 **Scope** is the package name: `engine`, `cli`, `catalog`, `backend`, `desktop`, `infra`, `docs`.
 
 Examples:
+
 ```
 feat(catalog): add recipe for Docker Desktop
 fix(engine): handle registry rollback on partial failure
@@ -101,6 +103,7 @@ tests/
 See [catalog/CONTRIBUTING.md](catalog/CONTRIBUTING.md) for recipe-specific guidelines.
 
 Quick checklist:
+
 - [ ] Recipe follows `schema.json`
 - [ ] `id` matches folder name
 - [ ] SHA256 checksum is accurate
@@ -122,6 +125,7 @@ Quick checklist:
 - Aim for both happy-path and error-path coverage
 
 Run tests:
+
 ```powershell
 # All packages
 .\infra\scripts\test-all.ps1
