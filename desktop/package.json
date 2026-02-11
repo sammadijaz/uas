@@ -1,0 +1,44 @@
+{
+  "name": "@uas/desktop",
+  "version": "0.1.0",
+  "description": "UAS Desktop App — Electron GUI for browsing catalog, managing profiles, and installing apps",
+  "main": "dist/main/main.js",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc && electron .",
+    "start": "electron .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "package": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "dependencies": {
+    "@uas/engine": "file:../engine",
+    "@uas/catalog": "file:../catalog"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "@types/node": "^22.12.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "build": {
+    "appId": "dev.uas.desktop",
+    "productName": "UAS",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "renderer/**/*"
+    ],
+    "win": {
+      "target": ["nsis"],
+      "icon": "renderer/assets/icon.ico"
+    }
+  }
+}

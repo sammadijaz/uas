@@ -98,8 +98,8 @@ Each folder is an isolated component with its own README, dependencies, and buil
 | 3     | CLI Tool                  | ✅ Complete |
 | 4     | Catalog System            | ✅ Complete |
 | 5     | Backend API               | ✅ Complete |
-| 6     | Desktop App               | 🔜 Next     |
-| 7     | Infra & Distribution      | ⬜ Planned  |
+| 6     | Desktop App               | ✅ Complete |
+| 7     | Infra & Distribution      | 🔜 Next     |
 
 ---
 

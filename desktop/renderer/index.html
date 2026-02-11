@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'">
+  <title>UAS — Universal App Store</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Title Bar -->
+  <header class="titlebar">
+    <div class="titlebar-title">UAS — Universal App Store</div>
+  </header>
+
+  <!-- Navigation Sidebar -->
+  <div class="app-container">
+    <nav class="sidebar">
+      <ul>
+        <li><button class="nav-btn active" data-view="catalog">📦 Catalog</button></li>
+        <li><button class="nav-btn" data-view="profiles">📋 Profiles</button></li>
+        <li><button class="nav-btn" data-view="installed">✅ Installed</button></li>
+        <li><button class="nav-btn" data-view="settings">⚙️ Settings</button></li>
+      </ul>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="content">
+      <!-- Catalog View -->
+      <section id="view-catalog" class="view active">
+        <div class="view-header">
+          <h2>App Catalog</h2>
+          <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Search apps..." autocomplete="off">
+          </div>
+        </div>
+        <div class="filter-bar">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="runtime">Runtime</button>
+          <button class="filter-btn" data-filter="development">Development</button>
+          <button class="filter-btn" data-filter="editor">Editor</button>
+          <button class="filter-btn" data-filter="systems">Systems</button>
+        </div>
+        <div id="catalog-grid" class="card-grid">
+          <div class="loading">Loading catalog...</div>
+        </div>
+      </section>
+
+      <!-- Profiles View -->
+      <section id="view-profiles" class="view">
+        <div class="view-header">
+          <h2>Profiles</h2>
+        </div>
+        <div id="profiles-list" class="card-grid">
+          <div class="loading">Loading profiles...</div>
+        </div>
+      </section>
+
+      <!-- Installed View -->
+      <section id="view-installed" class="view">
+        <div class="view-header">
+          <h2>Installed Apps</h2>
+        </div>
+        <div id="installed-list" class="card-grid">
+          <p class="empty-state">No apps installed yet. Browse the catalog to get started.</p>
+        </div>
+      </section>
+
+      <!-- Settings View -->
+      <section id="view-settings" class="view">
+        <div class="view-header">
+          <h2>Settings</h2>
+        </div>
+        <div id="settings-content" class="settings-panel">
+          <div class="setting-group">
+            <h3>System Information</h3>
+            <div id="system-info" class="info-table"></div>
+          </div>
+          <div class="setting-group">
+            <h3>Paths</h3>
+            <div id="system-paths" class="info-table"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- App Detail Modal -->
+      <div id="app-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+          <button class="modal-close">&times;</button>
+          <div id="modal-body"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
