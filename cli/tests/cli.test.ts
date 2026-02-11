@@ -474,9 +474,7 @@ describe("Install Command Alias", () => {
     prog.exitOverride(); // prevent process.exit in tests
     registerInstallCommand(prog);
 
-    const installCmd = prog.commands.find(
-      (c: any) => c.name() === "install",
-    );
+    const installCmd = prog.commands.find((c: any) => c.name() === "install");
     expect(installCmd).toBeDefined();
     expect(installCmd!.aliases()).toContain("i");
   });
@@ -571,7 +569,8 @@ describe("List Table Formatting", () => {
       s.length <= max ? s : s.slice(0, max - 1) + "\u2026";
 
     const short = "Short desc";
-    const long = "This is a very long description that definitely exceeds the limit";
+    const long =
+      "This is a very long description that definitely exceeds the limit";
 
     expect(truncate(short, 38)).toBe("Short desc");
     expect(truncate(long, 38).length).toBe(38);
