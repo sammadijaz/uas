@@ -94,8 +94,8 @@ Each folder is an isolated component with its own README, dependencies, and buil
 | ----- | ------------------------- | ----------- |
 | 0     | Project Foundation        | ✅ Complete |
 | 1     | Core Concepts & Contracts | ✅ Complete |
-| 2     | Installation Engine       | 🔜 Next     |
-| 3     | CLI Tool                  | ⬜ Planned  |
+| 2     | Installation Engine       | ✅ Complete |
+| 3     | CLI Tool                  | 🔜 Next     |
 | 4     | Catalog System            | ⬜ Planned  |
 | 5     | Backend API               | ⬜ Planned  |
 | 6     | Desktop App               | ⬜ Planned  |

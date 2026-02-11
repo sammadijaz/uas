@@ -8,7 +8,7 @@
 
 ## Overview
 
-An **install recipe** is a YAML file that describes how to install a single application on Windows. Recipes are the atomic unit of the UAS catalog. They are declarative — they describe *what* to install and *how*, but don't contain executable code.
+An **install recipe** is a YAML file that describes how to install a single application on Windows. Recipes are the atomic unit of the UAS catalog. They are declarative — they describe _what_ to install and _how_, but don't contain executable code.
 
 ---
 
@@ -26,74 +26,74 @@ The `<app-id>` is a lowercase, kebab-case identifier (e.g., `node`, `visual-stud
 
 ```yaml
 # ─── Identity ────────────────────────────────────────────
-id: string                    # Unique app identifier (kebab-case, lowercase)
-name: string                  # Human-readable display name
-description: string           # One-line description
-homepage: string              # Official website URL
-license: string               # SPDX license identifier (e.g., "MIT", "Apache-2.0")
+id: string # Unique app identifier (kebab-case, lowercase)
+name: string # Human-readable display name
+description: string # One-line description
+homepage: string # Official website URL
+license: string # SPDX license identifier (e.g., "MIT", "Apache-2.0")
 
 # ─── Version ─────────────────────────────────────────────
-version: string               # Semantic version (e.g., "20.11.1")
-version_cmd: string           # Command to check installed version (e.g., "node --version")
-version_regex: string         # Regex to extract version from command output
+version: string # Semantic version (e.g., "20.11.1")
+version_cmd: string # Command to check installed version (e.g., "node --version")
+version_regex: string # Regex to extract version from command output
 
 # ─── Installer ────────────────────────────────────────────
 installer:
-  type: enum                  # One of: exe, msi, zip, portable
-  url: string                 # HTTPS download URL
-  sha256: string              # SHA-256 checksum of the downloaded file
-  size_bytes: number          # Expected file size (optional, for progress)
+  type: enum # One of: exe, msi, zip, portable
+  url: string # HTTPS download URL
+  sha256: string # SHA-256 checksum of the downloaded file
+  size_bytes: number # Expected file size (optional, for progress)
 
   # Type-specific options:
 
   # For type: exe
   exe:
-    silent_args: string[]     # Arguments for silent installation (e.g., ["/S", "/VERYSILENT"])
-    install_dir_arg: string   # Argument to specify install directory (optional)
+    silent_args: string[] # Arguments for silent installation (e.g., ["/S", "/VERYSILENT"])
+    install_dir_arg: string # Argument to specify install directory (optional)
 
   # For type: msi
   msi:
-    properties: object        # MSI property overrides (e.g., { INSTALLDIR: "..." })
+    properties: object # MSI property overrides (e.g., { INSTALLDIR: "..." })
 
   # For type: zip
   zip:
-    extract_to: string        # Path to extract to (supports variables)
-    strip_root: boolean       # Strip the root directory from the archive (default: false)
+    extract_to: string # Path to extract to (supports variables)
+    strip_root: boolean # Strip the root directory from the archive (default: false)
 
   # For type: portable
   portable:
-    copy_to: string           # Destination directory (supports variables)
-    executable: string        # Name of the executable file within the archive/download
+    copy_to: string # Destination directory (supports variables)
+    executable: string # Name of the executable file within the archive/download
 
 # ─── Side Effects ─────────────────────────────────────────
 side_effects:
   path:
-    add: string[]             # Directories to add to PATH (supports variables)
+    add: string[] # Directories to add to PATH (supports variables)
   env:
-    set: object               # Environment variables to set (key:value pairs)
+    set: object # Environment variables to set (key:value pairs)
   registry:
-    - key: string             # Registry key path
-      value_name: string      # Value name
-      value_data: string      # Value data
-      value_type: string      # REG_SZ, REG_DWORD, etc.
+    - key: string # Registry key path
+      value_name: string # Value name
+      value_data: string # Value data
+      value_type: string # REG_SZ, REG_DWORD, etc.
   shortcuts:
-    - name: string            # Shortcut display name
-      target: string          # Target executable
-      location: enum          # desktop, start_menu
+    - name: string # Shortcut display name
+      target: string # Target executable
+      location: enum # desktop, start_menu
 
 # ─── Metadata ─────────────────────────────────────────────
 metadata:
-  categories: string[]        # e.g., ["runtime", "development", "editor"]
-  tags: string[]              # Freeform tags for search
-  maintainer: string          # Recipe maintainer (not the app author)
-  updated: string             # ISO 8601 date when recipe was last updated
+  categories: string[] # e.g., ["runtime", "development", "editor"]
+  tags: string[] # Freeform tags for search
+  maintainer: string # Recipe maintainer (not the app author)
+  updated: string # ISO 8601 date when recipe was last updated
 
 # ─── Requirements ─────────────────────────────────────────
 requirements:
-  os: string                  # Minimum Windows version (e.g., "10.0.19041")
-  arch: enum                  # x64, x86, arm64
-  admin: boolean              # Whether installation requires elevation (default: false)
-  dependencies: string[]      # Other recipe IDs that must be installed first
+  os: string # Minimum Windows version (e.g., "10.0.19041")
+  arch: enum # x64, x86, arm64
+  admin: boolean # Whether installation requires elevation (default: false)
+  dependencies: string[] # Other recipe IDs that must be installed first
 ```
 
 ---
@@ -102,15 +102,15 @@ requirements:
 
 Recipes support the following variables in path strings:
 
-| Variable | Resolves To | Example |
-|---|---|---|
-| `${LOCALAPPDATA}` | `%LOCALAPPDATA%` | `C:\Users\X\AppData\Local` |
-| `${APPDATA}` | `%APPDATA%` | `C:\Users\X\AppData\Roaming` |
-| `${USERPROFILE}` | `%USERPROFILE%` | `C:\Users\X` |
-| `${PROGRAMFILES}` | `%PROGRAMFILES%` | `C:\Program Files` |
-| `${PROGRAMFILES_X86}` | `%PROGRAMFILES(X86)%` | `C:\Program Files (x86)` |
-| `${TEMP}` | `%TEMP%` | `C:\Users\X\AppData\Local\Temp` |
-| `${UAS_APPS}` | UAS managed app directory | `C:\Users\X\AppData\Local\uas\apps` |
+| Variable              | Resolves To               | Example                             |
+| --------------------- | ------------------------- | ----------------------------------- |
+| `${LOCALAPPDATA}`     | `%LOCALAPPDATA%`          | `C:\Users\X\AppData\Local`          |
+| `${APPDATA}`          | `%APPDATA%`               | `C:\Users\X\AppData\Roaming`        |
+| `${USERPROFILE}`      | `%USERPROFILE%`           | `C:\Users\X`                        |
+| `${PROGRAMFILES}`     | `%PROGRAMFILES%`          | `C:\Program Files`                  |
+| `${PROGRAMFILES_X86}` | `%PROGRAMFILES(X86)%`     | `C:\Program Files (x86)`            |
+| `${TEMP}`             | `%TEMP%`                  | `C:\Users\X\AppData\Local\Temp`     |
+| `${UAS_APPS}`         | UAS managed app directory | `C:\Users\X\AppData\Local\uas\apps` |
 
 ---
 
@@ -176,22 +176,26 @@ requirements:
 ## Design Decisions
 
 ### Why YAML, not JSON?
+
 - YAML is more readable for humans who will author and review recipes
 - YAML supports comments (useful for documenting unusual installer flags)
 - YAML diffs cleanly in git
 - Validation happens via JSON Schema (YAML is parsed to JSON for validation)
 
 ### Why no shell commands?
+
 - Arbitrary commands are a security risk (recipe authors could run anything)
 - Declarative recipes are auditable: you can see what happens by reading the YAML
 - If an app truly needs custom logic, that's a signal the engine needs a new installer type
 
 ### Why sha256 is required?
+
 - Download integrity verification is non-negotiable for security
 - Without checksums, a compromised mirror could serve malware
 - The recipe author computes the checksum once; every user benefits
 
 ### Why side_effects are explicit?
+
 - The engine needs to know what changed to support rollback
 - Implicit side effects (hidden PATH changes, surprise registry keys) break trust
 - Explicit side effects make recipes auditable

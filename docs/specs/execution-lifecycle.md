@@ -73,12 +73,14 @@ Any state can transition to:
 ## States
 
 ### PENDING
+
 - **Description:** The installation request has been received but not started
 - **Entry conditions:** Engine receives a valid install request
 - **Actions:** None
 - **Exit:** Always transitions to VALIDATING
 
 ### VALIDATING
+
 - **Description:** The recipe is checked against the schema and the system requirements are verified
 - **Actions:**
   1. Validate recipe YAML against JSON Schema
@@ -90,6 +92,7 @@ Any state can transition to:
 - **Exit on failure:** → FAILED (with validation error details)
 
 ### RESOLVING
+
 - **Description:** Determine the exact version and download URL to use
 - **Actions:**
   1. If version is `"latest"`, resolve to the most recent recipe version
@@ -99,6 +102,7 @@ Any state can transition to:
 - **Exit on failure:** → FAILED (with resolution error details)
 
 ### DOWNLOADING
+
 - **Description:** Download the installer file
 - **Actions:**
   1. Create temp directory: `${TEMP}/uas/downloads/<app-id>/`
@@ -109,6 +113,7 @@ Any state can transition to:
 - **Progress:** Reports bytes downloaded / total bytes to the caller
 
 ### VERIFYING
+
 - **Description:** Validate the downloaded file's integrity
 - **Actions:**
   1. Compute SHA-256 hash of downloaded file
@@ -117,6 +122,7 @@ Any state can transition to:
 - **Exit on mismatch:** → FAILED ("Checksum mismatch: expected X, got Y")
 
 ### EXECUTING
+
 - **Description:** Run the installer or extract the archive
 - **Actions (vary by type):**
 
@@ -145,6 +151,7 @@ Any state can transition to:
 - **Exit on failure:** → FAILED (with executor error details, begin rollback)
 
 ### SIDE_EFFECTS
+
 - **Description:** Apply declared side effects to the system
 - **Actions (in order):**
   1. **PATH additions:** Add directories to user PATH (or system PATH if admin)
@@ -156,6 +163,7 @@ Any state can transition to:
 - **Exit on failure:** → FAILED (partial side effects may have applied; state DB records what succeeded)
 
 ### CONFIRMING
+
 - **Description:** Verify the installation actually worked
 - **Actions:**
   1. Run `version_cmd` (e.g., `node --version`)
@@ -165,6 +173,7 @@ Any state can transition to:
 - **Exit on failure:** → FAILED ("Installation appeared to succeed but version check failed")
 
 ### COMPLETED
+
 - **Description:** Terminal success state
 - **Actions:**
   1. Write installation record to state DB (app, version, timestamp, side effects)
@@ -173,6 +182,7 @@ Any state can transition to:
 - **This is a terminal state.** No further transitions.
 
 ### FAILED
+
 - **Description:** Terminal failure state
 - **Actions:**
   1. Record failure in state DB (app, error, state where failure occurred)
@@ -185,6 +195,7 @@ Any state can transition to:
 - **This is a terminal state** (unless transitioning to ROLLING_BACK).
 
 ### ROLLING_BACK
+
 - **Description:** Best-effort reversal of changes made during this installation
 - **Actions:**
   1. Read side effects that were applied (from state DB)
@@ -198,6 +209,7 @@ Any state can transition to:
 - **Exit:** → ROLLED_BACK (always, even if some reversals failed)
 
 ### ROLLED_BACK
+
 - **Description:** Terminal state after rollback attempt
 - **Actions:**
   1. Record rollback result in state DB (what was reversed, what wasn't)
@@ -210,17 +222,17 @@ Any state can transition to:
 
 In dry run mode, the engine goes through the same state transitions but **takes no actions**:
 
-| State | Dry Run Behavior |
-|---|---|
-| PENDING | Same |
-| VALIDATING | Full validation (schema, requirements, dependencies) |
-| RESOLVING | Full resolution (version, URL) |
-| DOWNLOADING | **Skipped** (HEAD request only to confirm URL is valid) |
-| VERIFYING | **Skipped** |
-| EXECUTING | **Skipped** (reports what would be executed) |
-| SIDE_EFFECTS | **Skipped** (reports what would change) |
-| CONFIRMING | **Skipped** |
-| COMPLETED | Reports predicted outcome |
+| State        | Dry Run Behavior                                        |
+| ------------ | ------------------------------------------------------- |
+| PENDING      | Same                                                    |
+| VALIDATING   | Full validation (schema, requirements, dependencies)    |
+| RESOLVING    | Full resolution (version, URL)                          |
+| DOWNLOADING  | **Skipped** (HEAD request only to confirm URL is valid) |
+| VERIFYING    | **Skipped**                                             |
+| EXECUTING    | **Skipped** (reports what would be executed)            |
+| SIDE_EFFECTS | **Skipped** (reports what would change)                 |
+| CONFIRMING   | **Skipped**                                             |
+| COMPLETED    | Reports predicted outcome                               |
 
 Dry run always returns a **plan** — a human-readable list of what would happen.
 
@@ -250,29 +262,33 @@ CREATE TABLE installation_log (
 
 Errors are classified to help the user understand what to do:
 
-| Category | Example | User Action |
-|---|---|---|
-| `VALIDATION_ERROR` | Recipe schema invalid | Fix recipe or report to maintainer |
-| `REQUIREMENT_ERROR` | Wrong architecture | Use correct recipe version |
-| `NETWORK_ERROR` | Download failed | Check network, retry |
-| `INTEGRITY_ERROR` | Checksum mismatch | Recipe may be outdated; report |
-| `EXECUTION_ERROR` | Installer exit code != 0 | Check installer logs |
-| `PERMISSION_ERROR` | Elevation denied | Run as admin or use non-admin recipe |
-| `VERIFICATION_ERROR` | Version check failed | Installation may be corrupt; retry |
-| `ROLLBACK_ERROR` | Could not reverse change | Manual cleanup may be needed |
+| Category             | Example                  | User Action                          |
+| -------------------- | ------------------------ | ------------------------------------ |
+| `VALIDATION_ERROR`   | Recipe schema invalid    | Fix recipe or report to maintainer   |
+| `REQUIREMENT_ERROR`  | Wrong architecture       | Use correct recipe version           |
+| `NETWORK_ERROR`      | Download failed          | Check network, retry                 |
+| `INTEGRITY_ERROR`    | Checksum mismatch        | Recipe may be outdated; report       |
+| `EXECUTION_ERROR`    | Installer exit code != 0 | Check installer logs                 |
+| `PERMISSION_ERROR`   | Elevation denied         | Run as admin or use non-admin recipe |
+| `VERIFICATION_ERROR` | Version check failed     | Installation may be corrupt; retry   |
+| `ROLLBACK_ERROR`     | Could not reverse change | Manual cleanup may be needed         |
 
 ---
 
 ## Design Decisions
 
 ### Why so many states?
-Each state is an observable checkpoint. When an installation fails, the user (and the logs) know *exactly* where it failed. "It failed during VERIFYING" is far more actionable than "install failed."
+
+Each state is an observable checkpoint. When an installation fails, the user (and the logs) know _exactly_ where it failed. "It failed during VERIFYING" is far more actionable than "install failed."
 
 ### Why is CONFIRMING a separate state?
+
 Just because an installer exited with code 0 doesn't mean it worked. We've all seen silent installers that "succeed" but leave nothing behind. The version check is our proof.
 
 ### Why is rollback best-effort?
+
 A perfect rollback would require filesystem snapshots or transactional installs. That's impractical for most Windows software. Best-effort rollback that handles the common cases (PATH, env, registry, files) is pragmatic.
 
 ### Why record dry runs in the DB?
+
 Dry runs are useful for auditing. "What was the plan?" is a question worth answering after the fact, especially in team environments.
