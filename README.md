@@ -76,7 +76,7 @@ cd uas
 | **Profiles**       | Declarative manifests: tools + versions + config in one YAML file           |
 | **Rollback**       | Every install tracked; undo any change with full state reversal             |
 | **Cloud Sync**     | Push/pull your environment across machines via the backend API              |
-| **Env Backup**     | Save and restore PATH + environment variables between machines             |
+| **Env Backup**     | Save and restore PATH + environment variables between machines              |
 
 ---
 

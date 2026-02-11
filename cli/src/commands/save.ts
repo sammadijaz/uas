@@ -26,76 +26,74 @@ export function registerSaveCommand(program: Command): void {
     .option("-n, --name <name>", "Profile name", "my-machine")
     .option("--no-env", "Skip saving environment variables")
     .option("-o, --output <file>", "Save to a specific file path")
-    .action(
-      async (opts: { name: string; env: boolean; output?: string }) => {
-        ensureDirectories();
-        const engineOpts = getEngineOptions();
-        const engine = new UASEngine(engineOpts);
-        await engine.init();
+    .action(async (opts: { name: string; env: boolean; output?: string }) => {
+      ensureDirectories();
+      const engineOpts = getEngineOptions();
+      const engine = new UASEngine(engineOpts);
+      await engine.init();
 
-        try {
-          const apps = engine.getInstalledApps();
-          const envVars = opts.env ? captureUserEnvVars() : {};
-          const userPath = opts.env ? captureUserPath() : [];
+      try {
+        const apps = engine.getInstalledApps();
+        const envVars = opts.env ? captureUserEnvVars() : {};
+        const userPath = opts.env ? captureUserPath() : [];
 
-          // Build profile
-          const profile: Profile & { environment?: object } = {
-            name: opts.name,
-            id: opts.name.toLowerCase().replace(/\s+/g, "-"),
-            description: `Saved from ${process.env.COMPUTERNAME || "unknown"} on ${today()}`,
-            author: process.env.USERNAME || "unknown",
-            version: "1.0.0",
-            schema_version: "1.0",
-            apps: apps.map((a) => ({
-              id: a.app_id,
-              version: a.version,
-              optional: false,
-            })),
-            metadata: {
-              created: new Date().toISOString(),
-              updated: new Date().toISOString(),
-              tags: ["saved"],
-              platform: "windows",
-              min_uas_version: "0.1.0",
-            },
+        // Build profile
+        const profile: Profile & { environment?: object } = {
+          name: opts.name,
+          id: opts.name.toLowerCase().replace(/\s+/g, "-"),
+          description: `Saved from ${process.env.COMPUTERNAME || "unknown"} on ${today()}`,
+          author: process.env.USERNAME || "unknown",
+          version: "1.0.0",
+          schema_version: "1.0",
+          apps: apps.map((a) => ({
+            id: a.app_id,
+            version: a.version,
+            optional: false,
+          })),
+          metadata: {
+            created: new Date().toISOString(),
+            updated: new Date().toISOString(),
+            tags: ["saved"],
+            platform: "windows",
+            min_uas_version: "0.1.0",
+          },
+        };
+
+        // Attach environment if requested
+        if (opts.env) {
+          (profile as any).environment = {
+            user_path: userPath,
+            variables: envVars,
           };
-
-          // Attach environment if requested
-          if (opts.env) {
-            (profile as any).environment = {
-              user_path: userPath,
-              variables: envVars,
-            };
-          }
-
-          const yamlContent = stringifyYaml(profile);
-
-          // Determine output path
-          const dest = opts.output
-            ? path.resolve(opts.output)
-            : path.join(paths.profiles, `${profile.id}.yaml`);
-
-          fs.mkdirSync(path.dirname(dest), { recursive: true });
-          fs.writeFileSync(dest, yamlContent, "utf-8");
-
-          printSuccess(`Profile saved to ${colors.bold(dest)}`);
-          printInfo(`${colors.bold(String(apps.length))} apps tracked`);
-          if (opts.env) {
-            printInfo(
-              `${colors.bold(String(Object.keys(envVars).length))} environment variables saved`,
-            );
-            printInfo(
-              `${colors.bold(String(userPath.length))} PATH entries saved`,
-            );
-          }
-          printInfo(
-            `Restore on another machine with: ${colors.bold("uas restore " + path.basename(dest))}`,
-          );
-        } finally {
-          engine.close();
         }
-      },
-    );
+
+        const yamlContent = stringifyYaml(profile);
+
+        // Determine output path
+        const dest = opts.output
+          ? path.resolve(opts.output)
+          : path.join(paths.profiles, `${profile.id}.yaml`);
+
+        fs.mkdirSync(path.dirname(dest), { recursive: true });
+        fs.writeFileSync(dest, yamlContent, "utf-8");
+
+        printSuccess(`Profile saved to ${colors.bold(dest)}`);
+        printInfo(`${colors.bold(String(apps.length))} apps tracked`);
+        if (opts.env) {
+          printInfo(
+            `${colors.bold(String(Object.keys(envVars).length))} environment variables saved`,
+          );
+          printInfo(
+            `${colors.bold(String(userPath.length))} PATH entries saved`,
+          );
+        }
+        printInfo(
+          `Restore on another machine with: ${colors.bold("uas restore " + path.basename(dest))}`,
+        );
+      } finally {
+        engine.close();
+      }
+    });
 }
 
 // ─── Helpers ──────────────────────────────────────────────────
@@ -107,7 +105,7 @@ function today(): string {
 function captureUserPath(): string[] {
   try {
     const raw = execSync(
-      'powershell -NoProfile -Command "[Environment]::GetEnvironmentVariable(\'Path\', \'User\')"',
+      "powershell -NoProfile -Command \"[Environment]::GetEnvironmentVariable('Path', 'User')\"",
       { encoding: "utf-8" },
     ).trim();
     return raw
@@ -122,7 +120,7 @@ function captureUserPath(): string[] {
 function captureUserEnvVars(): Record<string, string> {
   try {
     const raw = execSync(
-      'powershell -NoProfile -Command "[Environment]::GetEnvironmentVariables(\'User\') | ConvertTo-Json"',
+      "powershell -NoProfile -Command \"[Environment]::GetEnvironmentVariables('User') | ConvertTo-Json\"",
       { encoding: "utf-8" },
     ).trim();
     if (!raw || raw === "null") return {};

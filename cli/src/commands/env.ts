@@ -97,7 +97,9 @@ export function registerEnvCommand(program: Command): void {
         );
         for (const [key, value] of varEntries) {
           if (opts.dryRun) {
-            printInfo(`  ${colors.dim("[dry-run]")} SET ${key}=${truncate(value, 60)}`);
+            printInfo(
+              `  ${colors.dim("[dry-run]")} SET ${key}=${truncate(value, 60)}`,
+            );
           } else {
             try {
               setUserEnvVar(key, value);
@@ -133,9 +135,7 @@ export function registerEnvCommand(program: Command): void {
         printInfo("Dry run complete — no changes were made.");
       } else {
         printSuccess("Environment restored.");
-        printInfo(
-          "Open a new terminal window to see the changes take effect.",
-        );
+        printInfo("Open a new terminal window to see the changes take effect.");
       }
     });
 
@@ -200,7 +200,7 @@ function captureEnvironment(name: string): EnvSnapshot {
 function getUserPath(): string[] {
   try {
     const raw = execSync(
-      'powershell -NoProfile -Command "[Environment]::GetEnvironmentVariable(\'Path\', \'User\')"',
+      "powershell -NoProfile -Command \"[Environment]::GetEnvironmentVariable('Path', 'User')\"",
       { encoding: "utf-8" },
     ).trim();
     return raw
@@ -215,7 +215,7 @@ function getUserPath(): string[] {
 function getSystemPath(): string[] {
   try {
     const raw = execSync(
-      'powershell -NoProfile -Command "[Environment]::GetEnvironmentVariable(\'Path\', \'Machine\')"',
+      "powershell -NoProfile -Command \"[Environment]::GetEnvironmentVariable('Path', 'Machine')\"",
       { encoding: "utf-8" },
     ).trim();
     return raw
@@ -230,7 +230,7 @@ function getSystemPath(): string[] {
 function getUserEnvVars(): Record<string, string> {
   try {
     const raw = execSync(
-      'powershell -NoProfile -Command "[Environment]::GetEnvironmentVariables(\'User\') | ConvertTo-Json"',
+      "powershell -NoProfile -Command \"[Environment]::GetEnvironmentVariables('User') | ConvertTo-Json\"",
       { encoding: "utf-8" },
     ).trim();
     if (!raw || raw === "null") return {};

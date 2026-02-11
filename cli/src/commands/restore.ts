@@ -241,11 +241,11 @@ export function registerRestoreCommand(program: Command): void {
         if (opts.dryRun) {
           printInfo(`Dry run complete (${formatDuration(elapsed)})`);
         } else {
-          printSuccess(`Profile "${profile.name}" restored (${formatDuration(elapsed)})`);
+          printSuccess(
+            `Profile "${profile.name}" restored (${formatDuration(elapsed)})`,
+          );
           if (profile.environment) {
-            printInfo(
-              "Open a new terminal to see environment changes.",
-            );
+            printInfo("Open a new terminal to see environment changes.");
           }
         }
 

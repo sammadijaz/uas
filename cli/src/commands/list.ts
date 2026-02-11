@@ -56,7 +56,9 @@ export function registerListCommand(program: Command): void {
             return;
           }
 
-          printInfo(`${colors.bold(String(recipes.length))} software available:\n`);
+          printInfo(
+            `${colors.bold(String(recipes.length))} software available:\n`,
+          );
           printTable({
             head: ["Name", "Version", "Description", "Status"],
             rows: recipes.map((r) => {

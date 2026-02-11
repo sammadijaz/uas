@@ -47,7 +47,9 @@ const program = new Command();
 
 program
   .name("uas")
-  .description("Universal App Store — install, save, and restore your entire dev environment")
+  .description(
+    "Universal App Store — install, save, and restore your entire dev environment",
+  )
   .version("0.1.0");
 
 // ─── Core commands (most-used first) ────────────────────────

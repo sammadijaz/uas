@@ -136,9 +136,7 @@ async function pushToBackend(
     }
 
     spinner.stop();
-    printSuccess(
-      `Synced ${colors.bold(String(apps.length))} apps to cloud`,
-    );
+    printSuccess(`Synced ${colors.bold(String(apps.length))} apps to cloud`);
   } catch (err: unknown) {
     spinner.stop();
     const msg = err instanceof Error ? err.message : String(err);
