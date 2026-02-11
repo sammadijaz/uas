@@ -74,7 +74,7 @@ export class UASEngine {
    */
   private ensureInit(): void {
     if (!this.initialized) {
-      throw new Error('UASEngine not initialized. Call init() first.');
+      throw new Error("UASEngine not initialized. Call init() first.");
     }
   }
 

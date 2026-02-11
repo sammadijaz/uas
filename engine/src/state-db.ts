@@ -14,7 +14,7 @@
  * The database is persisted to disk on every write operation.
  */
 
-import initSqlJs, { Database as SqlJsDatabase } from 'sql.js';
+import initSqlJs, { Database as SqlJsDatabase } from "sql.js";
 import * as path from "path";
 import * as fs from "fs";
 import { InstalledApp, AppliedSideEffect, ExecutionState } from "./types";
@@ -137,12 +137,12 @@ export class StateDB {
         app.install_dir || null,
         app.recipe_hash,
         JSON.stringify(app.side_effects),
-      ]
+      ],
     );
     this.persist();
     this.logger.debug(
       { app_id: app.app_id, version: app.version },
-      'Recorded installation',
+      "Recorded installation",
     );
   }
 
@@ -151,9 +151,9 @@ export class StateDB {
    */
   removeInstall(appId: string): void {
     const db = this.ensureInit();
-    db.run('DELETE FROM installed_apps WHERE app_id = ?', [appId]);
+    db.run("DELETE FROM installed_apps WHERE app_id = ?", [appId]);
     this.persist();
-    this.logger.debug({ app_id: appId }, 'Removed installation record');
+    this.logger.debug({ app_id: appId }, "Removed installation record");
   }
 
   /**
@@ -161,7 +161,7 @@ export class StateDB {
    */
   getInstalledApp(appId: string): InstalledApp | null {
     const db = this.ensureInit();
-    const stmt = db.prepare('SELECT * FROM installed_apps WHERE app_id = ?');
+    const stmt = db.prepare("SELECT * FROM installed_apps WHERE app_id = ?");
     stmt.bind([appId]);
 
     if (!stmt.step()) {
@@ -178,7 +178,9 @@ export class StateDB {
       installed_at: row.installed_at as string,
       install_dir: (row.install_dir as string) || undefined,
       recipe_hash: row.recipe_hash as string,
-      side_effects: JSON.parse(row.side_effects as string) as AppliedSideEffect[],
+      side_effects: JSON.parse(
+        row.side_effects as string,
+      ) as AppliedSideEffect[],
     };
   }
 
@@ -188,7 +190,7 @@ export class StateDB {
   getAllInstalledApps(): InstalledApp[] {
     const db = this.ensureInit();
     const results: InstalledApp[] = [];
-    const stmt = db.prepare('SELECT * FROM installed_apps ORDER BY app_id');
+    const stmt = db.prepare("SELECT * FROM installed_apps ORDER BY app_id");
 
     while (stmt.step()) {
       const row = stmt.getAsObject();
@@ -198,7 +200,9 @@ export class StateDB {
         installed_at: row.installed_at as string,
         install_dir: (row.install_dir as string) || undefined,
         recipe_hash: row.recipe_hash as string,
-        side_effects: JSON.parse(row.side_effects as string) as AppliedSideEffect[],
+        side_effects: JSON.parse(
+          row.side_effects as string,
+        ) as AppliedSideEffect[],
       });
     }
     stmt.free();
@@ -211,7 +215,7 @@ export class StateDB {
    */
   isInstalled(appId: string): boolean {
     const db = this.ensureInit();
-    const stmt = db.prepare('SELECT 1 FROM installed_apps WHERE app_id = ?');
+    const stmt = db.prepare("SELECT 1 FROM installed_apps WHERE app_id = ?");
     stmt.bind([appId]);
     const exists = stmt.step();
     stmt.free();
@@ -227,7 +231,7 @@ export class StateDB {
     executionId: string,
     appId: string,
     state: ExecutionState,
-    result?: 'success' | 'failure',
+    result?: "success" | "failure",
     details?: Record<string, unknown>,
     dryRun: boolean = false,
   ): void {
@@ -239,7 +243,7 @@ export class StateDB {
       `UPDATE installation_log
        SET exited_at = ?, result = ?
        WHERE execution_id = ? AND exited_at IS NULL`,
-      [now, result || null, executionId]
+      [now, result || null, executionId],
     );
 
     // Open the new state
@@ -254,7 +258,7 @@ export class StateDB {
         now,
         details ? JSON.stringify(details) : null,
         dryRun ? 1 : 0,
-      ]
+      ],
     );
 
     this.persist();
@@ -283,7 +287,7 @@ export class StateDB {
       `SELECT state, entered_at, exited_at, result, details
        FROM installation_log
        WHERE execution_id = ?
-       ORDER BY id ASC`
+       ORDER BY id ASC`,
     );
     stmt.bind([executionId]);
 
@@ -329,7 +333,7 @@ export class StateDB {
        FROM installation_log
        WHERE app_id = ? AND state IN ('COMPLETED', 'FAILED', 'ROLLED_BACK')
        ORDER BY entered_at DESC
-       LIMIT ?`
+       LIMIT ?`,
     );
     stmt.bind([appId, limit]);
 
@@ -360,6 +364,6 @@ export class StateDB {
       this.db = null;
       this.initialized = false;
     }
-    this.logger.debug('State database closed');
+    this.logger.debug("State database closed");
   }
 }

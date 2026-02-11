@@ -2,7 +2,7 @@
  * Type declarations for sql.js
  * sql.js is an Emscripten port of SQLite to JavaScript/WASM.
  */
-declare module 'sql.js' {
+declare module "sql.js" {
   export interface SqlJsStatic {
     Database: typeof Database;
   }
@@ -16,7 +16,9 @@ declare module 'sql.js' {
     [key: string]: string | number | null | Uint8Array;
   }
 
-  export type BindParams = Array<string | number | null | Uint8Array> | ParamsObject;
+  export type BindParams =
+    | Array<string | number | null | Uint8Array>
+    | ParamsObject;
 
   export class Statement {
     bind(params?: BindParams): boolean;
