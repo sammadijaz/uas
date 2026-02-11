@@ -1,0 +1,42 @@
+# Git — Distributed version control system
+# Installs via EXE (Inno Setup) with silent mode
+
+id: git
+name: Git
+description: Distributed version control system
+homepage: https://git-scm.com
+license: GPL-2.0
+
+version: "2.47.1"
+version_cmd: "git --version"
+version_regex: "git version (\\d+\\.\\d+\\.\\d+)"
+
+installer:
+  type: exe
+  url: https://github.com/git-for-windows/git/releases/download/v2.47.1.windows.1/Git-2.47.1-64-bit.exe
+  sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+  size_bytes: 65000000
+  exe:
+    silent_args: ["/VERYSILENT", "/NORESTART", "/NOCANCEL", "/SP-"]
+    install_dir_arg: "/DIR="
+
+side_effects:
+  path:
+    add:
+      - "${PROGRAMFILES}\\Git\\cmd"
+  shortcuts:
+    - name: Git Bash
+      target: "${PROGRAMFILES}\\Git\\git-bash.exe"
+      location: start_menu
+
+metadata:
+  categories: ["vcs", "development"]
+  tags: ["git", "version-control", "scm", "github"]
+  maintainer: "uas-core-team"
+  updated: "2026-02-01"
+
+requirements:
+  os: "10.0.0"
+  arch: x64
+  admin: true
+  dependencies: []

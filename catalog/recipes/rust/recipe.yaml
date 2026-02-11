@@ -1,0 +1,42 @@
+# Rust — Systems programming language
+# Installs via portable (rustup-init.exe)
+
+id: rust
+name: Rust
+description: Systems programming language focused on safety, speed, and concurrency
+homepage: https://www.rust-lang.org
+license: Apache-2.0
+
+version: "1.84.1"
+version_cmd: "rustc --version"
+version_regex: "rustc (\\d+\\.\\d+\\.\\d+)"
+
+installer:
+  type: portable
+  url: https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe
+  sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+  size_bytes: 8500000
+  portable:
+    copy_to: "${USERPROFILE}\\.cargo\\bin"
+    executable: "rustup-init.exe"
+
+side_effects:
+  path:
+    add:
+      - "${USERPROFILE}\\.cargo\\bin"
+  env:
+    set:
+      RUSTUP_HOME: "${USERPROFILE}\\.rustup"
+      CARGO_HOME: "${USERPROFILE}\\.cargo"
+
+metadata:
+  categories: ["runtime", "development", "systems"]
+  tags: ["rust", "cargo", "rustup", "systems", "wasm"]
+  maintainer: "uas-core-team"
+  updated: "2026-02-01"
+
+requirements:
+  os: "10.0.0"
+  arch: x64
+  admin: false
+  dependencies: []

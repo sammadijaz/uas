@@ -1,0 +1,39 @@
+# Python — Programming language
+# Installs via EXE (Python.org installer) with PATH integration
+
+id: python
+name: Python
+description: Versatile programming language for scripting, automation, and development
+homepage: https://www.python.org
+license: PSF-2.0
+
+version: "3.13.2"
+version_cmd: "python --version"
+version_regex: "Python (\\d+\\.\\d+\\.\\d+)"
+
+installer:
+  type: exe
+  url: https://www.python.org/ftp/python/3.13.2/python-3.13.2-amd64.exe
+  sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+  size_bytes: 26000000
+  exe:
+    silent_args: ["/quiet", "InstallAllUsers=0", "PrependPath=1"]
+    install_dir_arg: "TargetDir="
+
+side_effects:
+  path:
+    add:
+      - "${LOCALAPPDATA}\\Programs\\Python\\Python313"
+      - "${LOCALAPPDATA}\\Programs\\Python\\Python313\\Scripts"
+
+metadata:
+  categories: ["runtime", "development", "scripting"]
+  tags: ["python", "pip", "scripting", "automation", "data-science"]
+  maintainer: "uas-core-team"
+  updated: "2026-02-01"
+
+requirements:
+  os: "10.0.0"
+  arch: x64
+  admin: false
+  dependencies: []

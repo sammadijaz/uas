@@ -1,0 +1,44 @@
+# Visual Studio Code — Code editor
+# Installs via EXE (Inno Setup) as user-level install (no admin)
+
+id: vscode
+name: Visual Studio Code
+description: Lightweight but powerful source code editor
+homepage: https://code.visualstudio.com
+license: MIT
+
+version: "1.97.2"
+version_cmd: "code --version"
+version_regex: "(\\d+\\.\\d+\\.\\d+)"
+
+installer:
+  type: exe
+  url: https://update.code.visualstudio.com/1.97.2/win32-x64-user/stable
+  sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+  size_bytes: 96000000
+  exe:
+    silent_args: ["/VERYSILENT", "/NORESTART", "/MERGETASKS=!runcode,addcontextmenufiles,addcontextmenufolders,addtopath"]
+
+side_effects:
+  path:
+    add:
+      - "${LOCALAPPDATA}\\Programs\\Microsoft VS Code\\bin"
+  shortcuts:
+    - name: Visual Studio Code
+      target: "${LOCALAPPDATA}\\Programs\\Microsoft VS Code\\Code.exe"
+      location: desktop
+    - name: Visual Studio Code
+      target: "${LOCALAPPDATA}\\Programs\\Microsoft VS Code\\Code.exe"
+      location: start_menu
+
+metadata:
+  categories: ["editor", "development"]
+  tags: ["vscode", "editor", "ide", "typescript", "extensions"]
+  maintainer: "uas-core-team"
+  updated: "2026-02-01"
+
+requirements:
+  os: "10.0.0"
+  arch: x64
+  admin: false
+  dependencies: []
