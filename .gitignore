@@ -146,3 +146,23 @@ dist
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
 
+# UAS-specific
+# Local state database
+*.db
+*.db-journal
+*.db-wal
+
+# Downloaded installers cache
+downloads/
+
+# Build outputs
+dist/
+out/
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# OS
+Thumbs.db
+Desktop.ini
