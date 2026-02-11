@@ -20,21 +20,21 @@
  *   logout                  Clear credentials (Phase 5)
  */
 
-import { Command } from 'commander';
-import { registerInstallCommand } from './commands/install';
-import { registerUninstallCommand } from './commands/uninstall';
-import { registerStatusCommand } from './commands/status';
-import { registerSearchCommand } from './commands/search';
-import { registerProfileCommand } from './commands/profile';
-import { registerSyncCommand } from './commands/sync';
-import { registerLoginCommand } from './commands/login';
+import { Command } from "commander";
+import { registerInstallCommand } from "./commands/install";
+import { registerUninstallCommand } from "./commands/uninstall";
+import { registerStatusCommand } from "./commands/status";
+import { registerSearchCommand } from "./commands/search";
+import { registerProfileCommand } from "./commands/profile";
+import { registerSyncCommand } from "./commands/sync";
+import { registerLoginCommand } from "./commands/login";
 
 const program = new Command();
 
 program
-  .name('uas')
-  .description('Universal App Store — Windows environment installer')
-  .version('0.1.0');
+  .name("uas")
+  .description("Universal App Store — Windows environment installer")
+  .version("0.1.0");
 
 // Register all commands
 registerInstallCommand(program);

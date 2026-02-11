@@ -17,7 +17,12 @@ installer:
   sha256: "0000000000000000000000000000000000000000000000000000000000000000"
   size_bytes: 96000000
   exe:
-    silent_args: ["/VERYSILENT", "/NORESTART", "/MERGETASKS=!runcode,addcontextmenufiles,addcontextmenufolders,addtopath"]
+    silent_args:
+      [
+        "/VERYSILENT",
+        "/NORESTART",
+        "/MERGETASKS=!runcode,addcontextmenufiles,addcontextmenufolders,addtopath",
+      ]
 
 side_effects:
   path:

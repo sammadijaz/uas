@@ -8,29 +8,26 @@
  *   uas search --list      List all available apps
  */
 
-import { Command } from 'commander';
-import { UASEngine } from '@uas/engine';
-import { getEngineOptions } from '../config';
-import { searchRecipes, listRecipes } from '../catalog';
-import {
-  printInfo,
-  printTable,
-  colors,
-} from '../output';
+import { Command } from "commander";
+import { UASEngine } from "@uas/engine";
+import { getEngineOptions } from "../config";
+import { searchRecipes, listRecipes } from "../catalog";
+import { printInfo, printTable, colors } from "../output";
 
 export function registerSearchCommand(program: Command): void {
   program
-    .command('search [query]')
-    .description('Search the catalog for applications')
-    .option('--list', 'List all available apps', false)
+    .command("search [query]")
+    .description("Search the catalog for applications")
+    .option("--list", "List all available apps", false)
     .action(async (query: string | undefined, opts: { list: boolean }) => {
-      const recipes = opts.list || !query ? listRecipes() : searchRecipes(query!);
+      const recipes =
+        opts.list || !query ? listRecipes() : searchRecipes(query!);
 
       if (recipes.length === 0) {
         if (query) {
           printInfo(`No apps found matching "${query}".`);
         } else {
-          printInfo('Catalog is empty. Add recipe files to ~/.uas/catalog/');
+          printInfo("Catalog is empty. Add recipe files to ~/.uas/catalog/");
         }
         return;
       }
@@ -44,21 +41,23 @@ export function registerSearchCommand(program: Command): void {
         const header = query
           ? `Found ${recipes.length} app(s) matching "${query}":`
           : `${recipes.length} app(s) available:`;
-        printInfo(header + '\n');
+        printInfo(header + "\n");
 
         printTable({
-          head: ['App', 'Version', 'Description', 'Status'],
+          head: ["App", "Version", "Description", "Status"],
           rows: recipes.map((r) => {
             const installed = engine.isInstalled(r.id);
-            const installedApp = installed ? engine.getInstalledApp(r.id) : null;
+            const installedApp = installed
+              ? engine.getInstalledApp(r.id)
+              : null;
             const status = installed
-              ? colors.success(`✔ ${installedApp?.version || 'installed'}`)
-              : colors.dim('not installed');
+              ? colors.success(`✔ ${installedApp?.version || "installed"}`)
+              : colors.dim("not installed");
 
             return [
               colors.app(r.id),
               colors.version(r.version),
-              (r.description || '').slice(0, 50),
+              (r.description || "").slice(0, 50),
               status,
             ];
           }),

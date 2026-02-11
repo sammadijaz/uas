@@ -16,11 +16,11 @@
  * versioned index — but this serves as the CLI's bridge until then.
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import { parse as parseYaml } from 'yaml';
-import { InstallRecipe } from '@uas/engine';
-import { paths } from './config';
+import * as fs from "fs";
+import * as path from "path";
+import { parse as parseYaml } from "yaml";
+import { InstallRecipe } from "@uas/engine";
+import { paths } from "./config";
 
 /**
  * Load a single recipe by ID from the catalog directory.
@@ -30,7 +30,7 @@ export function loadRecipe(appId: string): InstallRecipe | null {
   const filePath = path.join(paths.catalog, `${appId}.yaml`);
   if (!fs.existsSync(filePath)) return null;
 
-  const content = fs.readFileSync(filePath, 'utf-8');
+  const content = fs.readFileSync(filePath, "utf-8");
   return parseYaml(content) as InstallRecipe;
 }
 
@@ -40,12 +40,14 @@ export function loadRecipe(appId: string): InstallRecipe | null {
 export function listRecipes(): InstallRecipe[] {
   if (!fs.existsSync(paths.catalog)) return [];
 
-  const files = fs.readdirSync(paths.catalog).filter((f) => f.endsWith('.yaml'));
+  const files = fs
+    .readdirSync(paths.catalog)
+    .filter((f) => f.endsWith(".yaml"));
   const recipes: InstallRecipe[] = [];
 
   for (const file of files) {
     try {
-      const content = fs.readFileSync(path.join(paths.catalog, file), 'utf-8');
+      const content = fs.readFileSync(path.join(paths.catalog, file), "utf-8");
       recipes.push(parseYaml(content) as InstallRecipe);
     } catch {
       // Skip malformed recipes
@@ -68,7 +70,7 @@ export function searchRecipes(query: string): InstallRecipe[] {
       ...(r.metadata?.tags || []),
       ...(r.metadata?.categories || []),
     ]
-      .join(' ')
+      .join(" ")
       .toLowerCase();
     return haystack.includes(q);
   });

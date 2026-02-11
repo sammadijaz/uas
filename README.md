@@ -97,8 +97,8 @@ Each folder is an isolated component with its own README, dependencies, and buil
 | 2     | Installation Engine       | ✅ Complete |
 | 3     | CLI Tool                  | ✅ Complete |
 | 4     | Catalog System            | ✅ Complete |
-| 5     | Backend API               | 🔜 Next     |
-| 6     | Desktop App               | ⬜ Planned  |
+| 5     | Backend API               | ✅ Complete |
+| 6     | Desktop App               | 🔜 Next     |
 | 7     | Infra & Distribution      | ⬜ Planned  |
 
 ---

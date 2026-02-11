@@ -24,7 +24,7 @@ apps:
 
   - id: python
     version: "3.13.2"
-    optional: true  # Useful for build tools but not strictly required
+    optional: true # Useful for build tools but not strictly required
 
 metadata:
   created: "2026-02-01"

@@ -5,29 +5,29 @@
  * All UAS data lives under ~/.uas (i.e., %USERPROFILE%\.uas on Windows).
  */
 
-import * as path from 'path';
-import * as os from 'os';
-import * as fs from 'fs';
+import * as path from "path";
+import * as os from "os";
+import * as fs from "fs";
 
 /** Root data directory: ~/.uas */
-export const UAS_HOME = path.join(os.homedir(), '.uas');
+export const UAS_HOME = path.join(os.homedir(), ".uas");
 
 /** Default paths derived from UAS_HOME */
 export const paths = {
   /** SQLite state database */
-  stateDb: path.join(UAS_HOME, 'state.db'),
+  stateDb: path.join(UAS_HOME, "state.db"),
   /** Downloaded installers cache */
-  downloads: path.join(UAS_HOME, 'downloads'),
+  downloads: path.join(UAS_HOME, "downloads"),
   /** Local catalog mirror */
-  catalog: path.join(UAS_HOME, 'catalog'),
+  catalog: path.join(UAS_HOME, "catalog"),
   /** User profiles directory */
-  profiles: path.join(UAS_HOME, 'profiles'),
+  profiles: path.join(UAS_HOME, "profiles"),
   /** Portable apps directory */
-  apps: path.join(UAS_HOME, 'apps'),
+  apps: path.join(UAS_HOME, "apps"),
   /** Log files */
-  logs: path.join(UAS_HOME, 'logs'),
+  logs: path.join(UAS_HOME, "logs"),
   /** Auth token file */
-  authToken: path.join(UAS_HOME, 'auth.json'),
+  authToken: path.join(UAS_HOME, "auth.json"),
 };
 
 /**
@@ -36,7 +36,7 @@ export const paths = {
 export function ensureDirectories(): void {
   for (const [key, dirPath] of Object.entries(paths)) {
     // Skip files (auth token, state db)
-    if (key === 'authToken' || key === 'stateDb') continue;
+    if (key === "authToken" || key === "stateDb") continue;
     fs.mkdirSync(dirPath, { recursive: true });
   }
 }
@@ -44,7 +44,10 @@ export function ensureDirectories(): void {
 /**
  * Build EngineOptions from CLI configuration.
  */
-export function getEngineOptions(verbose: boolean = false, dryRun: boolean = false) {
+export function getEngineOptions(
+  verbose: boolean = false,
+  dryRun: boolean = false,
+) {
   ensureDirectories();
   return {
     state_db_path: paths.stateDb,

@@ -17,10 +17,10 @@
  * and provides fast lookup by ID, search by text, and filtering.
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import { parse as parseYaml } from 'yaml';
-import { validateRecipe, ValidationResult } from './validator';
+import * as fs from "fs";
+import * as path from "path";
+import { parse as parseYaml } from "yaml";
+import { validateRecipe, ValidationResult } from "./validator";
 
 /** Lightweight recipe reference for the index */
 export interface CatalogEntry {
@@ -49,14 +49,14 @@ export class Catalog {
    * Get the recipes directory path.
    */
   get recipesDir(): string {
-    return path.join(this.catalogDir, 'recipes');
+    return path.join(this.catalogDir, "recipes");
   }
 
   /**
    * Get the profiles directory path.
    */
   get profilesDir(): string {
-    return path.join(this.catalogDir, 'profiles');
+    return path.join(this.catalogDir, "profiles");
   }
 
   /**
@@ -81,11 +81,11 @@ export class Catalog {
    * Load a full recipe by app ID.
    */
   loadRecipe(appId: string): Recipe | null {
-    const filePath = path.join(this.recipesDir, appId, 'recipe.yaml');
+    const filePath = path.join(this.recipesDir, appId, "recipe.yaml");
     if (!fs.existsSync(filePath)) return null;
 
     try {
-      const content = fs.readFileSync(filePath, 'utf-8');
+      const content = fs.readFileSync(filePath, "utf-8");
       return parseYaml(content) as Recipe;
     } catch {
       return null;
@@ -131,7 +131,7 @@ export class Catalog {
         ...entry.tags,
         ...entry.categories,
       ]
-        .join(' ')
+        .join(" ")
         .toLowerCase();
       return haystack.includes(q);
     });
@@ -143,7 +143,7 @@ export class Catalog {
   filterByCategory(category: string): CatalogEntry[] {
     const c = category.toLowerCase();
     return this.getEntries().filter((entry) =>
-      entry.categories.some((cat) => cat.toLowerCase() === c)
+      entry.categories.some((cat) => cat.toLowerCase() === c),
     );
   }
 
@@ -153,7 +153,7 @@ export class Catalog {
   filterByTag(tag: string): CatalogEntry[] {
     const t = tag.toLowerCase();
     return this.getEntries().filter((entry) =>
-      entry.tags.some((entryTag) => entryTag.toLowerCase() === t)
+      entry.tags.some((entryTag) => entryTag.toLowerCase() === t),
     );
   }
 
@@ -183,9 +183,10 @@ export class Catalog {
    */
   listProfiles(): string[] {
     if (!fs.existsSync(this.profilesDir)) return [];
-    return fs.readdirSync(this.profilesDir)
-      .filter((f) => f.endsWith('.yaml'))
-      .map((f) => f.replace('.yaml', ''));
+    return fs
+      .readdirSync(this.profilesDir)
+      .filter((f) => f.endsWith(".yaml"))
+      .map((f) => f.replace(".yaml", ""));
   }
 
   /**
@@ -199,7 +200,7 @@ export class Catalog {
     if (!fs.existsSync(filePath)) return null;
 
     try {
-      const content = fs.readFileSync(filePath, 'utf-8');
+      const content = fs.readFileSync(filePath, "utf-8");
       return parseYaml(content) as Record<string, unknown>;
     } catch {
       return null;
@@ -216,15 +217,16 @@ export class Catalog {
 
     if (!fs.existsSync(this.recipesDir)) return entries;
 
-    const dirs = fs.readdirSync(this.recipesDir, { withFileTypes: true })
+    const dirs = fs
+      .readdirSync(this.recipesDir, { withFileTypes: true })
       .filter((d) => d.isDirectory());
 
     for (const dir of dirs) {
-      const recipeFile = path.join(this.recipesDir, dir.name, 'recipe.yaml');
+      const recipeFile = path.join(this.recipesDir, dir.name, "recipe.yaml");
       if (!fs.existsSync(recipeFile)) continue;
 
       try {
-        const content = fs.readFileSync(recipeFile, 'utf-8');
+        const content = fs.readFileSync(recipeFile, "utf-8");
         const recipe = parseYaml(content) as Record<string, unknown>;
 
         const metadata = recipe.metadata as Record<string, unknown> | undefined;
@@ -232,8 +234,8 @@ export class Catalog {
         entries.push({
           id: (recipe.id as string) || dir.name,
           name: (recipe.name as string) || dir.name,
-          version: (recipe.version as string) || 'unknown',
-          description: (recipe.description as string) || '',
+          version: (recipe.version as string) || "unknown",
+          description: (recipe.description as string) || "",
           categories: (metadata?.categories as string[]) || [],
           tags: (metadata?.tags as string[]) || [],
           filePath: recipeFile,

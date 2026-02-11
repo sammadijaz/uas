@@ -39,35 +39,35 @@ catalog/
 
 ## Recipe Types
 
-| Type | Use Case | Required Options |
-|---|---|---|
-| `exe` | `.exe` installers (NSIS/Inno Setup) | `exe.silent_args` |
-| `msi` | Windows Installer packages | `msi.properties` |
-| `zip` | Archive extraction | `zip.extract_to` |
-| `portable` | Single executable / self-contained | `portable.copy_to`, `portable.executable` |
+| Type       | Use Case                            | Required Options                          |
+| ---------- | ----------------------------------- | ----------------------------------------- |
+| `exe`      | `.exe` installers (NSIS/Inno Setup) | `exe.silent_args`                         |
+| `msi`      | Windows Installer packages          | `msi.properties`                          |
+| `zip`      | Archive extraction                  | `zip.extract_to`                          |
+| `portable` | Single executable / self-contained  | `portable.copy_to`, `portable.executable` |
 
 ## Sample Recipes
 
-| ID | Name | Type | Admin | Version |
-|---|---|---|---|---|
-| `node` | Node.js | MSI | Yes | 22.14.0 |
-| `git` | Git | EXE | Yes | 2.47.1 |
-| `python` | Python | EXE | No | 3.13.2 |
-| `vscode` | VS Code | EXE | No | 1.97.2 |
-| `rust` | Rust | Portable | No | 1.84.1 |
+| ID       | Name    | Type     | Admin | Version |
+| -------- | ------- | -------- | ----- | ------- |
+| `node`   | Node.js | MSI      | Yes   | 22.14.0 |
+| `git`    | Git     | EXE      | Yes   | 2.47.1  |
+| `python` | Python  | EXE      | No    | 3.13.2  |
+| `vscode` | VS Code | EXE      | No    | 1.97.2  |
+| `rust`   | Rust    | Portable | No    | 1.84.1  |
 
 ## Usage
 
 ```typescript
-import { Catalog, validateRecipe } from '@uas/catalog';
+import { Catalog, validateRecipe } from "@uas/catalog";
 
-const catalog = new Catalog('./catalog');
+const catalog = new Catalog("./catalog");
 
 // Search
-const results = catalog.search('javascript');
+const results = catalog.search("javascript");
 
 // Load recipe
-const recipe = catalog.loadRecipe('node');
+const recipe = catalog.loadRecipe("node");
 
 // Validate
 const result = validateRecipe(recipe);
@@ -75,7 +75,7 @@ if (!result.valid) console.log(result.errors);
 
 // Profiles
 const profiles = catalog.listProfiles();
-const profile = catalog.loadProfile('frontend-dev');
+const profile = catalog.loadProfile("frontend-dev");
 ```
 
 ## Scripts

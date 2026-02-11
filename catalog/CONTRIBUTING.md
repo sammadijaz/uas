@@ -24,25 +24,25 @@ recipes/
 
 ### Required Fields
 
-| Field | Description | Example |
-|---|---|---|
-| `id` | Lowercase kebab-case identifier | `my-app` |
-| `name` | Human-readable display name | `My Application` |
-| `description` | One-line description | `A great tool for developers` |
-| `homepage` | Official website URL | `https://myapp.dev` |
-| `license` | SPDX license identifier | `MIT` |
-| `version` | Semantic version | `1.2.3` |
-| `installer` | Installer configuration | (see below) |
-| `metadata` | Categories, tags, maintainer | (see below) |
-| `requirements` | OS, arch, admin, dependencies | (see below) |
+| Field          | Description                     | Example                       |
+| -------------- | ------------------------------- | ----------------------------- |
+| `id`           | Lowercase kebab-case identifier | `my-app`                      |
+| `name`         | Human-readable display name     | `My Application`              |
+| `description`  | One-line description            | `A great tool for developers` |
+| `homepage`     | Official website URL            | `https://myapp.dev`           |
+| `license`      | SPDX license identifier         | `MIT`                         |
+| `version`      | Semantic version                | `1.2.3`                       |
+| `installer`    | Installer configuration         | (see below)                   |
+| `metadata`     | Categories, tags, maintainer    | (see below)                   |
+| `requirements` | OS, arch, admin, dependencies   | (see below)                   |
 
 ### Installer Types
 
-| Type | Use When |
-|---|---|
-| `exe` | App has a `.exe` installer (Inno Setup, NSIS, etc.) |
-| `msi` | App has a `.msi` Windows Installer package |
-| `zip` | App is distributed as a `.zip` archive |
+| Type       | Use When                                            |
+| ---------- | --------------------------------------------------- |
+| `exe`      | App has a `.exe` installer (Inno Setup, NSIS, etc.) |
+| `msi`      | App has a `.msi` Windows Installer package          |
+| `zip`      | App is distributed as a `.zip` archive              |
 | `portable` | App is a single executable or self-contained folder |
 
 ### SHA-256 Checksums
@@ -63,15 +63,15 @@ sha256sum installer.exe
 
 Use variables instead of hardcoded paths:
 
-| Variable | Resolves To |
-|---|---|
-| `${LOCALAPPDATA}` | `C:\Users\X\AppData\Local` |
-| `${APPDATA}` | `C:\Users\X\AppData\Roaming` |
-| `${USERPROFILE}` | `C:\Users\X` |
-| `${PROGRAMFILES}` | `C:\Program Files` |
-| `${PROGRAMFILES_X86}` | `C:\Program Files (x86)` |
-| `${TEMP}` | `C:\Users\X\AppData\Local\Temp` |
-| `${UAS_APPS}` | UAS managed app directory |
+| Variable              | Resolves To                     |
+| --------------------- | ------------------------------- |
+| `${LOCALAPPDATA}`     | `C:\Users\X\AppData\Local`      |
+| `${APPDATA}`          | `C:\Users\X\AppData\Roaming`    |
+| `${USERPROFILE}`      | `C:\Users\X`                    |
+| `${PROGRAMFILES}`     | `C:\Program Files`              |
+| `${PROGRAMFILES_X86}` | `C:\Program Files (x86)`        |
+| `${TEMP}`             | `C:\Users\X\AppData\Local\Temp` |
+| `${UAS_APPS}`         | UAS managed app directory       |
 
 ## Validation Rules
 

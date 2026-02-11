@@ -9,9 +9,9 @@
  * control verbosity and support --json mode in the future.
  */
 
-import chalk from 'chalk';
-import ora, { Ora } from 'ora';
-import Table from 'cli-table3';
+import chalk from "chalk";
+import ora, { Ora } from "ora";
+import Table from "cli-table3";
 
 // ─── Color Shortcuts ────────────────────────────────────────
 
@@ -30,29 +30,29 @@ export const colors = {
 // ─── Print Helpers ──────────────────────────────────────────
 
 export function printSuccess(msg: string): void {
-  console.log(colors.success('✔ ') + msg);
+  console.log(colors.success("✔ ") + msg);
 }
 
 export function printError(msg: string): void {
-  console.error(colors.error('✖ ') + msg);
+  console.error(colors.error("✖ ") + msg);
 }
 
 export function printWarn(msg: string): void {
-  console.log(colors.warn('⚠ ') + msg);
+  console.log(colors.warn("⚠ ") + msg);
 }
 
 export function printInfo(msg: string): void {
-  console.log(colors.info('ℹ ') + msg);
+  console.log(colors.info("ℹ ") + msg);
 }
 
 export function printDryRun(msg: string): void {
-  console.log(colors.warn('[DRY RUN] ') + msg);
+  console.log(colors.warn("[DRY RUN] ") + msg);
 }
 
 // ─── Spinner ────────────────────────────────────────────────
 
 export function createSpinner(text: string): Ora {
-  return ora({ text, color: 'cyan' });
+  return ora({ text, color: "cyan" });
 }
 
 // ─── Tables ─────────────────────────────────────────────────
@@ -65,7 +65,7 @@ export interface TableOptions {
 export function printTable({ head, rows }: TableOptions): void {
   const table = new Table({
     head: head.map((h) => chalk.bold.cyan(h)),
-    style: { head: [], border: ['gray'] },
+    style: { head: [], border: ["gray"] },
   });
   for (const row of rows) {
     table.push(row);
@@ -98,8 +98,8 @@ export function formatState(state: string): string {
 // ─── Byte Formatting ────────────────────────────────────────
 
 export function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B';
-  const units = ['B', 'KB', 'MB', 'GB'];
+  if (bytes === 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
   return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`;
 }

@@ -11,14 +11,14 @@
  *   1 - One or more recipes invalid
  */
 
-import * as path from 'path';
-import { Catalog } from './loader';
+import * as path from "path";
+import { Catalog } from "./loader";
 
-const catalogDir = path.join(__dirname, '..');
+const catalogDir = path.join(__dirname, "..");
 const catalog = new Catalog(catalogDir);
 
-console.log('UAS Catalog Validator');
-console.log('====================\n');
+console.log("UAS Catalog Validator");
+console.log("====================\n");
 
 const results = catalog.validateAll();
 let hasErrors = false;
@@ -38,9 +38,9 @@ for (const [appId, result] of results) {
 console.log(`\n${results.size} recipe(s) checked.`);
 
 if (hasErrors) {
-  console.log('Some recipes have validation errors.\n');
+  console.log("Some recipes have validation errors.\n");
   process.exit(1);
 } else {
-  console.log('All recipes are valid.\n');
+  console.log("All recipes are valid.\n");
   process.exit(0);
 }
