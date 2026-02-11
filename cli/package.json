@@ -1,12 +1,11 @@
 {
-  "name": "@uas/cli",
+  "name": "uas",
   "version": "0.1.0",
-  "description": "UAS Command-Line Interface — terminal-friendly wrapper around the installation engine",
+  "description": "Universal App Store — install, save, and restore your entire dev environment",
   "main": "dist/index.js",
   "bin": {
     "uas": "dist/index.js"
   },
-  "private": true,
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
@@ -15,6 +14,19 @@
     "lint": "eslint src/ --ext .ts",
     "start": "node dist/index.js"
   },
+  "keywords": [
+    "universal-app-store",
+    "windows",
+    "installer",
+    "environment",
+    "package-manager",
+    "developer-tools",
+    "profile",
+    "restore",
+    "backup"
+  ],
+  "author": "",
+  "license": "MIT",
   "dependencies": {
     "@uas/engine": "file:../engine",
     "commander": "^13.1.0",

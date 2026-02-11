@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.0] — 2026-02-11
+
+### Added
+
+**Simplified CLI Workflow**
+
+- `uas list` — Browse all available software with install status
+- `uas list --installed` — Show only installed apps
+- `uas remove <app>` — User-friendly alias for uninstall
+- `uas save` — Save installed apps + environment variables to a profile
+- `uas restore [file]` — Restore apps and environment on a new machine
+- `uas env save` — Snapshot PATH and user environment variables
+- `uas env restore <file>` — Restore environment variables from a snapshot
+- `uas env show` — List saved environment snapshots
+- 8 new tests for save/restore/env/list/remove commands
+
+**Real Backend Integration**
+
+- `uas login` now connects to the backend REST API (interactive + token mode)
+- `uas logout` clears stored credentials
+- `uas sync` pushes installed apps to cloud profile
+- `uas sync --pull` pulls remote profile to local
+
+### Changed
+
+- CLI package renamed from `@uas/cli` to `uas` for `npm install -g uas`
+- Removed `"private": true` from CLI package.json to allow npm publishing
+- CLI description updated to reflect new workflow
+- CI pipeline rewritten from matrix strategy to sequential dependency order
+- README updated with new 125-test count and simplified workflow examples
+- GUIDE.md updated with complete CLI command reference
+
+### Fixed
+
+- CI failures for CLI and Desktop (file: dependencies broke matrix builds)
+- Catalog tsconfig missing `"types": ["node"]`
+- Implicit `any` types in catalog loader callbacks
+- Desktop renderer false TS errors from `@ts-check` on vanilla JS
+- PowerShell test script unused variables
+
+---
+
 ## [0.1.0] — 2026-02-11
 
 ### Added

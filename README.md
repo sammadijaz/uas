@@ -4,7 +4,7 @@
 
 **A Windows-first, account-synced, stateful environment installer.**
 
-[![CI](https://img.shields.io/badge/tests-117%20passing-brightgreen)](.github/workflows/ci.yml)
+[![CI](https://img.shields.io/badge/tests-125%20passing-brightgreen)](.github/workflows/ci.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A520-green)](https://nodejs.org/)
@@ -32,14 +32,22 @@ Setting up a new Windows machine for development is painful:
 UAS treats your entire toolchain as a **versioned, declarative profile** that can be installed, synced, diffed, and rolled back.
 
 ```powershell
-# Install a single app
-uas install node
+# Install globally
+npm install -g uas
 
-# Or define your entire environment and apply it in one shot
-uas profile apply frontend-dev
+# Browse and install software
+uas list
+uas install node
+uas install python
+
+# Save your ENTIRE environment (apps + env vars)
+uas save
+
+# Restore on a new machine
+uas restore
 ```
 
-Think of it as **"dotfiles for Windows"** meets **"Homebrew + Chocolatey + Ninite"** — with cloud sync and rollback.
+Think of it as **"dotfiles for Windows"** meets **"Homebrew + Chocolatey + Ninite"** — with cloud sync, env vars, and rollback.
 
 ---
 
@@ -49,7 +57,7 @@ Think of it as **"dotfiles for Windows"** meets **"Homebrew + Chocolatey + Ninit
 git clone https://github.com/user/uas.git
 cd uas
 .\infra\scripts\build-all.ps1    # Build all 5 packages
-.\infra\scripts\test-all.ps1     # Run all 117 tests
+.\infra\scripts\test-all.ps1     # Run all 125 tests
 ```
 
 > **[Read the full Getting Started guide →](GUIDE.md)**
@@ -61,13 +69,14 @@ cd uas
 | Capability         | Description                                                                 |
 | ------------------ | --------------------------------------------------------------------------- |
 | **Install Engine** | Executes install recipes (EXE, MSI, ZIP, portable) with full state tracking |
-| **CLI**            | `uas install node`, `uas profile apply dev`, `uas sync`                     |
+| **CLI**            | `uas list`, `uas install`, `uas remove`, `uas save`, `uas restore`          |
 | **Desktop App**    | Browse catalog, manage profiles, trigger installs — Electron-powered        |
 | **Web Backend**    | Auth, profile storage, install history — REST API with JWT                  |
 | **App Catalog**    | Community-maintained recipes with JSON Schema + semantic validation         |
 | **Profiles**       | Declarative manifests: tools + versions + config in one YAML file           |
 | **Rollback**       | Every install tracked; undo any change with full state reversal             |
 | **Cloud Sync**     | Push/pull your environment across machines via the backend API              |
+| **Env Backup**     | Save and restore PATH + environment variables between machines             |
 
 ---
 
@@ -113,7 +122,7 @@ Both the CLI and Desktop App are **thin controllers** over the shared Install En
 ```
 uas/
 ├── engine/     Core installation engine — the heart of UAS          (25 tests)
-├── cli/        Command-line interface — uas install, status, sync   (12 tests)
+├── cli/        Command-line interface — list, install, save, restore (20 tests)
 ├── catalog/    Install recipes + JSON Schema validation             (40 tests)
 ├── backend/    Express REST API — auth, profiles, machines          (27 tests)
 ├── desktop/    Electron GUI — catalog browser, profiles, settings   (13 tests)
@@ -122,7 +131,7 @@ uas/
 └── GUIDE.md    ← Complete getting started & deployment guide
 ```
 
-Each component is an independent package with its own `package.json`, `tsconfig.json`, build process, and test suite. **117 tests total, all passing.**
+Each component is an independent package with its own `package.json`, `tsconfig.json`, build process, and test suite. **125 tests total, all passing.**
 
 ---
 
@@ -135,7 +144,7 @@ All 8 phases complete. The project is fully implemented and tested.
 | 0     | Project Foundation        | —     | ✅ Complete |
 | 1     | Core Concepts & Contracts | —     | ✅ Complete |
 | 2     | Installation Engine       | 25    | ✅ Complete |
-| 3     | CLI Tool                  | 12    | ✅ Complete |
+| 3     | CLI Tool                  | 20    | ✅ Complete |
 | 4     | Catalog System            | 40    | ✅ Complete |
 | 5     | Backend API               | 27    | ✅ Complete |
 | 6     | Desktop App               | 13    | ✅ Complete |

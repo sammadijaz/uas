@@ -1,6 +1,6 @@
 # UAS CI/CD — Build & Test
 # Runs on all PRs and pushes to main.
-# Tests all packages: engine, cli, catalog, backend, desktop.
+# Tests all packages in dependency order.
 
 name: CI
 
@@ -12,12 +12,8 @@ on:
 
 jobs:
   test:
-    name: Test (${{ matrix.package }})
+    name: Build & Test All
     runs-on: windows-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        package: [engine, cli, catalog, backend, desktop]
 
     steps:
       - name: Checkout
@@ -28,16 +24,56 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Install dependencies (${{ matrix.package }})
-        working-directory: ${{ matrix.package }}
-        run: npm ci || npm install
-
-      - name: Build (${{ matrix.package }})
-        working-directory: ${{ matrix.package }}
+      # ── Tier 0: No dependencies ──
+      - name: "Engine: install"
+        working-directory: engine
+        run: npm install
+      - name: "Engine: build"
+        working-directory: engine
         run: npm run build
+      - name: "Engine: test"
+        working-directory: engine
+        run: npm test
 
-      - name: Test (${{ matrix.package }})
-        working-directory: ${{ matrix.package }}
+      - name: "Catalog: install"
+        working-directory: catalog
+        run: npm install
+      - name: "Catalog: build"
+        working-directory: catalog
+        run: npm run build
+      - name: "Catalog: test"
+        working-directory: catalog
+        run: npm test
+
+      - name: "Backend: install"
+        working-directory: backend
+        run: npm install
+      - name: "Backend: build"
+        working-directory: backend
+        run: npm run build
+      - name: "Backend: test"
+        working-directory: backend
+        run: npm test
+
+      # ── Tier 1: Depends on engine + catalog ──
+      - name: "CLI: install"
+        working-directory: cli
+        run: npm install
+      - name: "CLI: build"
+        working-directory: cli
+        run: npm run build
+      - name: "CLI: test"
+        working-directory: cli
+        run: npm test
+
+      - name: "Desktop: install"
+        working-directory: desktop
+        run: npm install
+      - name: "Desktop: build"
+        working-directory: desktop
+        run: npm run build
+      - name: "Desktop: test"
+        working-directory: desktop
         run: npm test
 
   lint:
@@ -54,12 +90,12 @@ jobs:
 
       - name: Check TypeScript (engine)
         working-directory: engine
-        run: npm ci || npm install && npx tsc --noEmit
-
-      - name: Check TypeScript (backend)
-        working-directory: backend
-        run: npm ci || npm install && npx tsc --noEmit
+        run: npm install && npx tsc --noEmit
 
       - name: Check TypeScript (catalog)
         working-directory: catalog
-        run: npm ci || npm install && npx tsc --noEmit
+        run: npm install && npx tsc --noEmit
+
+      - name: Check TypeScript (backend)
+        working-directory: backend
+        run: npm install && npx tsc --noEmit

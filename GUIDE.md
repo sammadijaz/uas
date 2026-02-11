@@ -71,14 +71,31 @@ cd uas
 # 2. Build everything
 .\infra\scripts\build-all.ps1
 
-# 3. Test everything
+# 3. Test everything (125 tests)
 .\infra\scripts\test-all.ps1
 
 # 4. Use the CLI
 cd cli
-node dist/index.js search node
+
+# List available software
+node dist/index.js list
+
+# Install software
 node dist/index.js install node --dry-run
-node dist/index.js status
+
+# Save your environment (apps + env vars)
+node dist/index.js save
+
+# Restore on another machine
+node dist/index.js restore
+
+# Environment variable management
+node dist/index.js env save
+node dist/index.js env show
+
+# For global installation:
+#   cd cli && npm link
+#   Now you can run: uas list, uas install node, uas save, etc.
 
 # 5. Start the backend API
 cd ..\backend
@@ -229,39 +246,84 @@ await engine.shutdown();
 ```powershell
 cd cli
 
+# ─── Browsing ───────────────────────────────
+# List all available software
+node dist/index.js list
+
+# List only installed software
+node dist/index.js list --installed
+
 # Search the catalog
 node dist/index.js search "node"
 
-# Install an app (dry run)
+# ─── Installing & Removing ──────────────────
+# Install an app (dry run first)
 node dist/index.js install node --dry-run
 
 # Install for real
 node dist/index.js install node
 
+# Remove an app
+node dist/index.js remove node
+
 # Check what's installed
 node dist/index.js status
 
-# Apply a profile (installs all apps in the profile)
+# ─── Save & Restore (the magic) ─────────────
+# Save everything — apps + environment variables
+node dist/index.js save
+
+# Save with a custom name
+node dist/index.js save --name work-laptop
+
+# Restore on a new machine
+node dist/index.js restore
+
+# Restore from a specific file
+node dist/index.js restore work-laptop
+
+# ─── Environment Variables ──────────────────
+# Save your PATH + env vars
+node dist/index.js env save
+
+# See saved snapshots
+node dist/index.js env show
+
+# Restore env vars (dry run first)
+node dist/index.js env restore default --dry-run
+
+# ─── Cloud Sync ─────────────────────────────
+# Login to sync across machines
+node dist/index.js login
+
+# Push your state to the cloud
+node dist/index.js sync
+
+# Pull from cloud on another machine
+node dist/index.js sync --pull
+
+# ─── Profiles (advanced) ────────────────────
+# Apply a profile YAML
 node dist/index.js profile apply frontend-dev --dry-run
 
-# See profile differences
+# See what a profile would change
 node dist/index.js profile diff frontend-dev
 
-# Export current state as a profile
+# Export current state as profile YAML
 node dist/index.js profile export > my-setup.yaml
-
-# Uninstall an app
-node dist/index.js uninstall node
 ```
 
-**Global install (for `uas` command everywhere):**
+**Global install (use `uas` directly from anywhere):**
 
 ```powershell
 cd cli
 npm link
 # Now use from anywhere:
+uas list
 uas install node
-uas status
+uas save
+uas restore
+uas env save
 ```
 
 ### 3. Catalog System
