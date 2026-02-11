@@ -38,7 +38,7 @@ export function registerProfileCommand(program: Command): void {
 
   profile
     .command("apply <file>")
-    .description("Apply a profile — install all its apps")
+    .description("Apply a profile - install all its apps")
     .option("--dry-run", "Preview without installing", false)
     .option("--verbose", "Show detailed output", false)
     .action(
@@ -104,7 +104,7 @@ export function registerProfileCommand(program: Command): void {
             engine.on((event: EngineEvent) => {
               if (event.type === "state_change") {
                 const data = event.data as { state: ExecutionState };
-                spinner.text = `${formatState(data.state)} — ${recipe.name}`;
+                spinner.text = `${formatState(data.state)} - ${recipe.name}`;
               }
             });
 
@@ -136,7 +136,7 @@ export function registerProfileCommand(program: Command): void {
           const elapsed = Date.now() - startTime;
           console.log();
           printInfo(
-            `Profile "${profileData.name}" — ` +
+            `Profile "${profileData.name}" - ` +
               `${colors.success(String(installed) + " installed")}, ` +
               `${colors.dim(String(skipped) + " skipped")}, ` +
               `${failed > 0 ? colors.error(String(failed) + " failed") : colors.dim("0 failed")} ` +
@@ -179,7 +179,7 @@ export function registerProfileCommand(program: Command): void {
               colors.success("+ install"),
               colors.app(appSpec.id),
               colors.version(wantVersion),
-              colors.dim("—"),
+              colors.dim("-"),
             ]);
           } else if (
             wantVersion !== "latest" &&
@@ -225,7 +225,7 @@ export function registerProfileCommand(program: Command): void {
       try {
         const apps = engine.getInstalledApps();
         if (apps.length === 0) {
-          printInfo("No apps installed — nothing to export.");
+          printInfo("No apps installed - nothing to export.");
           return;
         }
 

@@ -119,7 +119,7 @@ export function registerRestoreCommand(program: Command): void {
                   appsSkipped++;
                 } else {
                   printError(
-                    `"${appSpec.id}" not found in catalog — ` +
+                    `"${appSpec.id}" not found in catalog - ` +
                       `add it to ~/.uas/catalog/ and retry`,
                   );
                   appsFailed++;
@@ -137,7 +137,7 @@ export function registerRestoreCommand(program: Command): void {
               engine.on((event: EngineEvent) => {
                 if (event.type === "state_change") {
                   const data = event.data as { state: ExecutionState };
-                  spinner.text = `${formatState(data.state)} — ${recipe.name}`;
+                  spinner.text = `${formatState(data.state)} - ${recipe.name}`;
                 }
               });
 
@@ -162,14 +162,14 @@ export function registerRestoreCommand(program: Command): void {
                   appsInstalled++;
                 } else {
                   printError(
-                    `Failed: ${recipe.id} — ${result.error?.message || result.final_state}`,
+                    `Failed: ${recipe.id} - ${result.error?.message || result.final_state}`,
                   );
                   appsFailed++;
                 }
               } catch (err: unknown) {
                 spinner.stop();
                 const msg = err instanceof Error ? err.message : String(err);
-                printError(`Failed: ${recipe.id} — ${msg}`);
+                printError(`Failed: ${recipe.id} - ${msg}`);
                 appsFailed++;
               }
             }

@@ -228,7 +228,7 @@ export async function detectInstalled(
     if (detected) {
       logger.info(
         { appId, installedVersion: detected, targetVersion },
-        "Different version detected — will proceed with install",
+        "Different version detected - will proceed with install",
       );
     }
   }
@@ -250,7 +250,7 @@ export async function detectInstalled(
 
   logger.debug(
     { appId, targetVersion },
-    "App not detected at target version — install needed",
+    "App not detected at target version - install needed",
   );
   return { found: false };
 }

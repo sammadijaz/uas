@@ -13,6 +13,17 @@ import chalk from "chalk";
 import ora, { Ora } from "ora";
 import Table from "cli-table3";
 
+// ─── Force UTF-8 encoding on Windows ───────────────────────
+// Prevents broken characters (ΓÇö) when terminals default to legacy codepages.
+if (process.platform === "win32") {
+  try {
+    if (process.stdout.setEncoding) process.stdout.setEncoding("utf8");
+    if (process.stderr.setEncoding) process.stderr.setEncoding("utf8");
+  } catch {
+    /* swallow — some environments don't support setEncoding on stdout */
+  }
+}
+
 // ─── Debug Mode ─────────────────────────────────────────────
 
 let _debugMode = false;
@@ -144,13 +155,19 @@ export function createSpinner(text: string): Ora {
 export interface TableOptions {
   head: string[];
   rows: string[][];
+  colWidths?: number[];
 }
 
-export function printTable({ head, rows }: TableOptions): void {
-  const table = new Table({
+export function printTable({ head, rows, colWidths }: TableOptions): void {
+  const tableOpts: Record<string, unknown> = {
     head: head.map((h) => chalk.bold.cyan(h)),
     style: { head: [], border: ["gray"] },
-  });
+  };
+  if (colWidths) {
+    tableOpts.colWidths = colWidths;
+    tableOpts.wordWrap = true;
+  }
+  const table = new Table(tableOpts as ConstructorParameters<typeof Table>[0]);
   for (const row of rows) {
     table.push(row);
   }

@@ -51,14 +51,14 @@ export async function evaluateDownload(
   logger: Logger,
 ): Promise<DownloadDecision> {
   if (!fs.existsSync(filePath)) {
-    logger.debug({ path: filePath }, "Installer not cached — download needed");
+    logger.debug({ path: filePath }, "Installer not cached - download needed");
     return { needed: true, filePath };
   }
 
   // File exists — verify checksum
   logger.debug(
     { path: filePath },
-    "Cached installer found — verifying checksum",
+    "Cached installer found - verifying checksum",
   );
   try {
     const actual = await computeFileHash(filePath);
@@ -67,7 +67,7 @@ export async function evaluateDownload(
     if (actual === expected) {
       logger.info(
         { path: filePath, sha256: actual },
-        "Cached installer checksum matches — skipping download",
+        "Cached installer checksum matches - skipping download",
       );
       return { needed: false, reason: "cached_valid", filePath };
     }
@@ -75,14 +75,14 @@ export async function evaluateDownload(
     // Mismatch — delete stale file
     logger.warn(
       { path: filePath, expected, actual },
-      "Cached installer checksum mismatch — will redownload",
+      "Cached installer checksum mismatch - will redownload",
     );
     fs.unlinkSync(filePath);
     return { needed: true, reason: "exists_mismatch_redownload", filePath };
   } catch (err: unknown) {
     // If hashing fails, delete and redownload
     const msg = err instanceof Error ? err.message : String(err);
-    logger.warn({ error: msg }, "Failed to hash cached file — will redownload");
+    logger.warn({ error: msg }, "Failed to hash cached file - will redownload");
     try {
       fs.unlinkSync(filePath);
     } catch {
@@ -159,7 +159,7 @@ export async function smartDownload(
 
   logger.info(
     { path: result.file_path, sha256: actual, ms: result.duration_ms },
-    "Download complete — checksum verified",
+    "Download complete - checksum verified",
   );
 
   return {

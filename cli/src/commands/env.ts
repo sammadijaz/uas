@@ -132,7 +132,7 @@ export function registerEnvCommand(program: Command): void {
       }
 
       if (opts.dryRun) {
-        printInfo("Dry run complete — no changes were made.");
+        printInfo("Dry run complete - no changes were made.");
       } else {
         printSuccess("Environment restored.");
         printInfo("Open a new terminal window to see the changes take effect.");
@@ -169,7 +169,7 @@ export function registerEnvCommand(program: Command): void {
             String(Object.keys(snap.user_vars).length),
           ]);
         } catch {
-          rows.push([file, "—", "—", "—"]);
+          rows.push([file, "-", "-", "-"]);
         }
       }
 

@@ -61,7 +61,7 @@ export class UASEngine {
   constructor(options: EngineOptions) {
     this.options = options;
     this.logger = createLogger({
-      level: options.verbose ? "debug" : "info",
+      level: options.verbose ? "debug" : "silent",
     });
     this.stateDb = new StateDB(options.state_db_path, this.logger);
   }
@@ -425,7 +425,7 @@ export class UASEngine {
         if (!dlResult.downloaded) {
           this.logger.info(
             { reason: dlResult.skipReason },
-            "Download skipped — valid installer already cached",
+            "Download skipped - valid installer already cached",
           );
         }
       } catch (err: unknown) {

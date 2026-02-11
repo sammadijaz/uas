@@ -180,18 +180,28 @@ export async function executeMsi(
             exitCode,
             exitCodeName: info.name,
             category: info.category,
-            command,
             logFile,
             durationMs,
           },
           `MSI install failed: ${info.message}`,
         );
 
-        // Extra diagnostics for ERROR_INVALID_COMMAND_LINE
+        // Extra diagnostics for ERROR_INSTALL_FAILURE (1603)
+        if (exitCode === 1603) {
+          logger.error(
+            { logFile },
+            "Exit code 1603 (fatal installation error). " +
+              "Common causes: a newer version is already installed, " +
+              "installer blocked by Windows, or a previous install is incomplete. " +
+              "Check the MSI log for details.",
+          );
+        }
+
+        // Extra diagnostics for ERROR_INVALID_COMMAND_LINE (1639)
         if (exitCode === 1639) {
           logger.error(
             { fullCommand: command },
-            "Exit code 1639 means invalid arguments. Full command logged above. " +
+            "Exit code 1639 means invalid arguments. " +
               "Verify MSI property syntax: KEY=\"VALUE\" with no spaces around '='.",
           );
         }
@@ -209,7 +219,14 @@ export async function executeMsi(
         rebootRequired: exitCode === 3010 || exitCode === 1641,
         message: info.ok
           ? `Installed ${displayName}${exitCode === 3010 ? " (reboot required)" : ""}`
-          : `MSI install failed [${info.name}]: ${info.message}`,
+          : exitCode === 1603
+            ? `MSI returned 1603 (Fatal installation error).\n` +
+              `This often happens when:\n` +
+              `  - A newer version is already installed\n` +
+              `  - Installer is blocked by Windows\n` +
+              `  - A previous install is incomplete\n` +
+              `MSI log: ${logFile}`
+            : `MSI install failed [${info.name}]: ${info.message}`,
         command,
         logFile,
         stderr: stderr || undefined,

@@ -11,6 +11,8 @@ import * as os from "os";
 import * as fs from "fs";
 import { stringify as stringifyYaml, parse as parseYaml } from "yaml";
 import { loadRecipe, listRecipes, searchRecipes } from "../src/catalog";
+import { Command } from "commander";
+import { registerInstallCommand } from "../src/commands/install";
 import {
   formatBytes,
   formatDuration,
@@ -18,6 +20,7 @@ import {
   formatErrorCategory,
   setDebugMode,
   isDebugMode,
+  printDebug,
 } from "../src/output";
 
 const TEST_DIR = path.join(os.tmpdir(), "uas-cli-test");
@@ -460,5 +463,118 @@ describe("Remove Command Logic", () => {
 
     expect(installedApps.has("node")).toBe(true);
     expect(installedApps.has("python")).toBe(false);
+  });
+});
+
+// ─── Install Command Alias ──────────────────────────────────
+
+describe("Install Command Alias", () => {
+  it("registers 'i' alias on the install command", () => {
+    const prog = new Command();
+    prog.exitOverride(); // prevent process.exit in tests
+    registerInstallCommand(prog);
+
+    const installCmd = prog.commands.find(
+      (c: any) => c.name() === "install",
+    );
+    expect(installCmd).toBeDefined();
+    expect(installCmd!.aliases()).toContain("i");
+  });
+});
+
+// ─── UTF-8 Output Safety ───────────────────────────────────
+
+describe("UTF-8 Output Safety", () => {
+  it("has no em-dashes in user-visible string constants", () => {
+    // Read key output-producing CLI source files and ensure no U+2014
+    const fs = require("fs");
+    const path = require("path");
+    const cliSrc = path.join(__dirname, "..", "src");
+
+    const files = [
+      "commands/install.ts",
+      "commands/uninstall.ts",
+      "commands/remove.ts",
+      "commands/list.ts",
+      "commands/profile.ts",
+      "commands/env.ts",
+      "commands/restore.ts",
+      "commands/sync.ts",
+    ];
+
+    for (const file of files) {
+      const content = fs.readFileSync(path.join(cliSrc, file), "utf-8");
+      // Only check inside string literals (template and regular)
+      // Simple approach: find all template / normal strings containing em-dash
+      const lines = content.split("\n");
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        // Skip comment-only lines (/* or // or *)
+        const trimmed = line.trim();
+        if (
+          trimmed.startsWith("//") ||
+          trimmed.startsWith("/*") ||
+          trimmed.startsWith("*")
+        ) {
+          continue;
+        }
+        // Check for em-dash in code lines (likely in strings)
+        if (line.includes("\u2014")) {
+          throw new Error(
+            `Em-dash (U+2014) found in ${file}:${i + 1} - replace with ASCII hyphen`,
+          );
+        }
+      }
+    }
+  });
+});
+
+// ─── Debug Mode Output Suppression ──────────────────────────
+
+describe("Debug Mode Output Suppression", () => {
+  it("printDebug does nothing when debug mode is off", () => {
+    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    setDebugMode(false);
+
+    printDebug("should not appear");
+
+    // console.log should not have been called with debug text
+    const calls = consoleSpy.mock.calls.filter((c) =>
+      String(c[0]).includes("should not appear"),
+    );
+    expect(calls).toHaveLength(0);
+    consoleSpy.mockRestore();
+  });
+
+  it("printDebug outputs when debug mode is on", () => {
+    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    setDebugMode(true);
+
+    printDebug("test debug message");
+
+    const calls = consoleSpy.mock.calls.filter((c) =>
+      String(c[0]).includes("test debug message"),
+    );
+    expect(calls.length).toBeGreaterThan(0);
+
+    setDebugMode(false);
+    consoleSpy.mockRestore();
+  });
+});
+
+// ─── List Table Formatting ──────────────────────────────────
+
+describe("List Table Formatting", () => {
+  it("truncates long descriptions properly", () => {
+    // The list command truncates descriptions to 38 chars
+    const truncate = (s: string, max: number) =>
+      s.length <= max ? s : s.slice(0, max - 1) + "\u2026";
+
+    const short = "Short desc";
+    const long = "This is a very long description that definitely exceeds the limit";
+
+    expect(truncate(short, 38)).toBe("Short desc");
+    expect(truncate(long, 38).length).toBe(38);
+    expect(truncate(long, 38).endsWith("\u2026")).toBe(true);
   });
 });

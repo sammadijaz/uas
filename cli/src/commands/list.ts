@@ -14,6 +14,12 @@ import { getEngineOptions } from "../config";
 import { searchRecipes, listRecipes } from "../catalog";
 import { printInfo, printTable, colors } from "../output";
 
+/** Truncate a string to maxLen, add ellipsis if needed */
+function truncate(s: string, maxLen: number): string {
+  if (s.length <= maxLen) return s;
+  return s.slice(0, maxLen - 1) + "\u2026"; // … (single-char ellipsis)
+}
+
 export function registerListCommand(program: Command): void {
   program
     .command("list")
@@ -40,6 +46,7 @@ export function registerListCommand(program: Command): void {
           );
           printTable({
             head: ["Name", "Version", "Installed On"],
+            colWidths: [22, 14, 20],
             rows: apps.map((a) => [
               colors.app(a.app_id),
               colors.version(a.version),
@@ -61,15 +68,16 @@ export function registerListCommand(program: Command): void {
           );
           printTable({
             head: ["Name", "Version", "Description", "Status"],
+            colWidths: [18, 12, 40, 16],
             rows: recipes.map((r) => {
               const installed = engine.isInstalled(r.id);
               const status = installed
-                ? colors.success("✔ installed")
+                ? colors.success("installed")
                 : colors.dim("available");
               return [
                 colors.app(r.id),
                 colors.version(r.version),
-                (r.description || "").slice(0, 50),
+                truncate(r.description || "", 38),
                 status,
               ];
             }),

@@ -76,6 +76,7 @@ const STAGE_DONE: Partial<Record<ExecutionState, string>> = {
 export function registerInstallCommand(program: Command): void {
   program
     .command("install <app>")
+    .alias("i")
     .description("Install an application from the catalog")
     .option("-v, --version <version>", "Specific version to install")
     .option("--dry-run", "Preview installation without executing", false)
@@ -135,12 +136,17 @@ export function registerInstallCommand(program: Command): void {
               message?: string;
             };
 
+            // Skip duplicate events for the same state (engine emits
+            // enter + success for each stage)
+            if (data.state === lastState) {
+              if (data.message) {
+                printDebug(`${data.state}: ${data.message}`);
+              }
+              return;
+            }
+
             // When entering a new stage, mark the previous one as done
-            if (
-              lastState &&
-              lastState !== data.state &&
-              STAGE_DONE[lastState]
-            ) {
+            if (lastState && STAGE_DONE[lastState]) {
               spinner.stop();
               printStageSuccess(STAGE_DONE[lastState]!);
               completedStages.push(lastState);

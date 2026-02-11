@@ -51,7 +51,7 @@ export function registerRemoveCommand(program: Command): void {
         engine.on((event: EngineEvent) => {
           if (event.type === "state_change") {
             const data = event.data as { state: ExecutionState };
-            spinner.text = `${formatState(data.state)} — ${app}`;
+            spinner.text = `${formatState(data.state)} - ${app}`;
           }
         });
 
@@ -66,7 +66,7 @@ export function registerRemoveCommand(program: Command): void {
           if (result.final_state === "COMPLETED") {
             if (opts.dryRun) {
               printDryRun(
-                `Dry run complete — would remove ${colors.app(app)} v${colors.version(installed.version)}`,
+                `Dry run complete - would remove ${colors.app(app)} v${colors.version(installed.version)}`,
               );
             } else {
               printSuccess(

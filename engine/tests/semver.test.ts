@@ -1,14 +1,14 @@
 /**
  * UAS Engine -- Semver Utility Tests
  *
- * Tests for version normalization, parsing, comparison,
- * and downgrade/upgrade classification.
+ * Tests for version normalization, comparison (using semver npm package),
+ * coercion, and downgrade/upgrade classification.
  */
 
 import { describe, it, expect } from "vitest";
 import {
   normalizeSemver,
-  parseSemver,
+  coerceSemver,
   compareSemver,
   isValidSemver,
   classifyVersionChange,
@@ -41,65 +41,32 @@ describe("normalizeSemver", () => {
 });
 
 // ────────────────────────────────────────────────────────────────
-// parseSemver
+// coerceSemver
 // ────────────────────────────────────────────────────────────────
 
-describe("parseSemver", () => {
-  it("parses standard X.Y.Z format", () => {
-    const result = parseSemver("1.2.3");
-    expect(result).toEqual({
-      major: 1,
-      minor: 2,
-      patch: 3,
-      normalized: "1.2.3",
-    });
+describe("coerceSemver", () => {
+  it("coerces standard X.Y.Z format", () => {
+    expect(coerceSemver("1.2.3")).toBe("1.2.3");
   });
 
-  it("parses version with v prefix", () => {
-    const result = parseSemver("v22.11.0");
-    expect(result).toEqual({
-      major: 22,
-      minor: 11,
-      patch: 0,
-      normalized: "22.11.0",
-    });
+  it("coerces version with v prefix", () => {
+    expect(coerceSemver("v22.11.0")).toBe("22.11.0");
   });
 
-  it("defaults patch to 0 for X.Y format", () => {
-    const result = parseSemver("1.0");
-    expect(result).toEqual({
-      major: 1,
-      minor: 0,
-      patch: 0,
-      normalized: "1.0",
-    });
+  it("coerces X.Y to X.Y.0", () => {
+    expect(coerceSemver("1.0")).toBe("1.0.0");
   });
 
-  it("handles large version numbers", () => {
-    const result = parseSemver("2025.1.15");
-    expect(result).toEqual({
-      major: 2025,
-      minor: 1,
-      patch: 15,
-      normalized: "2025.1.15",
-    });
+  it("coerces single number to X.0.0", () => {
+    expect(coerceSemver("42")).toBe("42.0.0");
   });
 
   it("returns null for empty string", () => {
-    expect(parseSemver("")).toBeNull();
+    expect(coerceSemver("")).toBeNull();
   });
 
   it("returns null for non-version strings", () => {
-    expect(parseSemver("not-a-version")).toBeNull();
-  });
-
-  it("returns null for single number", () => {
-    expect(parseSemver("42")).toBeNull();
-  });
-
-  it("returns null for prerelease tags", () => {
-    // We intentionally don't handle prerelease — returns null
-    expect(parseSemver("1.0.0-beta.1")).toBeNull();
+    expect(coerceSemver("not-a-version")).toBeNull();
   });
 });
 
@@ -154,6 +121,15 @@ describe("compareSemver", () => {
 
   it("compares mixed v-prefix correctly", () => {
     expect(compareSemver("v22.11.0", "v24.12.0")).toBe(-1);
+  });
+
+  // THE critical bug fix: 24.12.0 > 20.11.1 must return 1
+  it("correctly compares 24.12.0 > 20.11.1", () => {
+    expect(compareSemver("24.12.0", "20.11.1")).toBe(1);
+  });
+
+  it("correctly compares 20.11.1 < 24.12.0", () => {
+    expect(compareSemver("20.11.1", "24.12.0")).toBe(-1);
   });
 });
 
@@ -222,5 +198,14 @@ describe("classifyVersionChange", () => {
 
   it("classifies patch downgrade correctly", () => {
     expect(classifyVersionChange("1.2.4", "1.2.3")).toBe("downgrade");
+  });
+
+  // The critical real-world test: downgrading from Node 24 to Node 20
+  it("blocks downgrade from 24.12.0 to 20.11.1", () => {
+    expect(classifyVersionChange("24.12.0", "20.11.1")).toBe("downgrade");
+  });
+
+  it("allows upgrade from 20.11.1 to 24.12.0", () => {
+    expect(classifyVersionChange("20.11.1", "24.12.0")).toBe("upgrade");
   });
 });

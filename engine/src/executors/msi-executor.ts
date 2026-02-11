@@ -64,13 +64,25 @@ export class MsiExecutor extends BaseExecutor {
         const result = await runElevated("msiexec.exe", args, logger);
         const info = lookupMsiExitCode(result.exitCode);
 
+        let message: string;
+        if (info.ok) {
+          message = `Installed ${displayName} (elevated)${result.exitCode === 3010 ? " - reboot required" : ""}`;
+        } else if (result.exitCode === 1603) {
+          message =
+            `MSI returned 1603 (Fatal installation error).\n` +
+            `This often happens when:\n` +
+            `  - A newer version is already installed\n` +
+            `  - Installer is blocked by Windows\n` +
+            `  - A previous install is incomplete`;
+        } else {
+          message = `MSI install failed [${info.name}]: ${info.message}`;
+        }
+
         return {
           success: info.ok,
           exit_code: result.exitCode,
           reboot_required: result.exitCode === 3010 || result.exitCode === 1641,
-          message: info.ok
-            ? `Installed ${displayName} (elevated)${result.exitCode === 3010 ? " — reboot required" : ""}`
-            : `MSI install failed [${info.name}]: ${info.message}`,
+          message,
           files_created: [],
         };
       }

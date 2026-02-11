@@ -68,7 +68,7 @@ async function pushToBackend(
 
     if (apps.length === 0) {
       spinner.stop();
-      printInfo("No apps installed — nothing to sync.");
+      printInfo("No apps installed - nothing to sync.");
       return;
     }
 

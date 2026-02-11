@@ -1,19 +1,23 @@
 /**
- * UAS Engine — Structured Logger
+ * UAS Engine -- Structured Logger
  *
  * Wraps pino for structured, human-readable logging.
  * All engine operations log through this module.
+ *
+ * When verbose=false (default), logging is silent -- no JSON logs are
+ * emitted to stdout. This ensures CLI users only see clean output.
+ * When verbose=true (--debug mode), structured logs go to stderr.
  */
 
 import pino from "pino";
 
 export interface LoggerOptions {
-  level: "debug" | "info" | "warn" | "error";
+  level: "silent" | "debug" | "info" | "warn" | "error";
   pretty: boolean;
 }
 
 const DEFAULT_OPTIONS: LoggerOptions = {
-  level: "info",
+  level: "silent",
   pretty: true,
 };
 
@@ -27,7 +31,7 @@ export function createLogger(
     transport: opts.pretty
       ? {
           target: "pino/file",
-          options: { destination: 1 }, // stdout
+          options: { destination: 2 }, // stderr (not stdout)
         }
       : undefined,
     formatters: {
