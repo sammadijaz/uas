@@ -1,7 +1,9 @@
 /**
- * UAS CLI — List Command
+ * UAS CLI - List Command
  *
  * Lists all available software in the catalog or all installed apps.
+ * Adapts table layout to terminal width; falls back to compact cards
+ * when the terminal is narrower than 70 columns.
  *
  * Usage:
  *   uas list              List all available software
@@ -12,13 +14,7 @@ import { Command } from "commander";
 import { UASEngine } from "@uas/engine";
 import { getEngineOptions } from "../config";
 import { searchRecipes, listRecipes } from "../catalog";
-import { printInfo, printTable, colors } from "../output";
-
-/** Truncate a string to maxLen, add ellipsis if needed */
-function truncate(s: string, maxLen: number): string {
-  if (s.length <= maxLen) return s;
-  return s.slice(0, maxLen - 1) + "\u2026"; // … (single-char ellipsis)
-}
+import { printInfo, printAdaptiveTable, colors } from "../output";
 
 export function registerListCommand(program: Command): void {
   program
@@ -44,9 +40,12 @@ export function registerListCommand(program: Command): void {
           printInfo(
             `${colors.bold(String(apps.length))} software installed:\n`,
           );
-          printTable({
-            head: ["Name", "Version", "Installed On"],
-            colWidths: [22, 14, 20],
+          printAdaptiveTable({
+            columns: [
+              { header: "Name", minWidth: 12 },
+              { header: "Version", minWidth: 10 },
+              { header: "Installed On", minWidth: 14, flexible: true },
+            ],
             rows: apps.map((a) => [
               colors.app(a.app_id),
               colors.version(a.version),
@@ -66,9 +65,13 @@ export function registerListCommand(program: Command): void {
           printInfo(
             `${colors.bold(String(recipes.length))} software available:\n`,
           );
-          printTable({
-            head: ["Name", "Version", "Description", "Status"],
-            colWidths: [18, 12, 40, 16],
+          printAdaptiveTable({
+            columns: [
+              { header: "Name", minWidth: 10 },
+              { header: "Version", minWidth: 8 },
+              { header: "Description", minWidth: 12, flexible: true },
+              { header: "Status", minWidth: 10 },
+            ],
             rows: recipes.map((r) => {
               const installed = engine.isInstalled(r.id);
               const status = installed
@@ -77,7 +80,7 @@ export function registerListCommand(program: Command): void {
               return [
                 colors.app(r.id),
                 colors.version(r.version),
-                truncate(r.description || "", 38),
+                r.description || "",
                 status,
               ];
             }),

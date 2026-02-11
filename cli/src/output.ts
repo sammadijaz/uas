@@ -152,20 +152,284 @@ export function createSpinner(text: string): Ora {
 
 // ─── Tables ─────────────────────────────────────────────────
 
+/** Minimum terminal width below which we switch to compact (no-table) layout */
+const MIN_TABLE_WIDTH = 70;
+
+/** Default terminal width when process.stdout.columns is unavailable */
+const DEFAULT_TERMINAL_WIDTH = 80;
+
+/**
+ * Detect whether to use ASCII-only box drawing characters.
+ * On Windows cmd/PowerShell without TERM set, Unicode borders corrupt.
+ */
+export function shouldUseAsciiBorders(): boolean {
+  return process.platform === "win32" && !process.env.TERM;
+}
+
+/**
+ * Get the usable terminal width in columns.
+ */
+export function getTerminalWidth(): number {
+  return process.stdout.columns || DEFAULT_TERMINAL_WIDTH;
+}
+
+/**
+ * Truncate a plain-text string to `max` visible characters, appending "..."
+ * if it was shortened. Never returns a string longer than `max`.
+ */
+export function truncateText(s: string, max: number): string {
+  if (max < 4) return s.slice(0, max);
+  if (s.length <= max) return s;
+  return s.slice(0, max - 3) + "...";
+}
+
+/**
+ * Strip ANSI escape codes to get the visible length of a string.
+ */
+function stripAnsi(s: string): string {
+  // eslint-disable-next-line no-control-regex
+  return s.replace(/\u001b\[[0-9;]*m/g, "");
+}
+
+/**
+ * Pad or truncate a (possibly ANSI-colored) string to exactly `width`
+ * visible characters. Truncates with "..." if over; right-pads if under.
+ */
+function fitToWidth(s: string, width: number): string {
+  const visible = stripAnsi(s);
+  if (visible.length <= width) {
+    return s + " ".repeat(width - visible.length);
+  }
+  // Need to truncate — work character by character preserving ANSI
+  const RESET = "\u001b[0m";
+  let out = "";
+  let visCount = 0;
+  const target = width - 3; // leave room for "..."
+  let i = 0;
+  while (i < s.length && visCount < target) {
+    if (s[i] === "\u001b") {
+      // Consume entire escape sequence
+      const end = s.indexOf("m", i);
+      if (end !== -1) {
+        out += s.slice(i, end + 1);
+        i = end + 1;
+        continue;
+      }
+    }
+    out += s[i];
+    visCount++;
+    i++;
+  }
+  return out + RESET + "...";
+}
+
+export interface TableColumn {
+  /** Header label */
+  header: string;
+  /** Minimum column width (content area, excluding borders) */
+  minWidth?: number;
+  /**
+   * If true, this column absorbs remaining space and shrinks first
+   * when the terminal is narrow. Only one column should be flexible.
+   */
+  flexible?: boolean;
+}
+
+export interface AdaptiveTableOptions {
+  /** Column definitions */
+  columns: TableColumn[];
+  /**
+   * Row data — each inner array must match columns.length.
+   * Values may contain ANSI color codes.
+   */
+  rows: string[][];
+}
+
+export interface CompactItem {
+  /** Primary label displayed as the heading line */
+  label: string;
+  /** Key-value pairs displayed indented below the label */
+  fields: { key: string; value: string }[];
+}
+
+/**
+ * Calculate column widths that fit within `termWidth`.
+ *
+ * Strategy:
+ * 1. Start each column at its minWidth (default 8).
+ * 2. The flexible column gets all remaining space.
+ * 3. If there is no remaining space, the flexible column gets its minWidth.
+ * 4. All columns are clamped to >= minWidth.
+ *
+ * cli-table3 colWidths include 2 chars of padding (1 left + 1 right)
+ * plus 1 char per border. With N columns there are N+1 border chars.
+ */
+function calculateColWidths(
+  columns: TableColumn[],
+  termWidth: number,
+): number[] {
+  const borderOverhead = columns.length + 1; // N+1 border chars (│)
+  const paddingPerCol = 2; // 1 space each side
+  const available = termWidth - borderOverhead;
+
+  const minWidths = columns.map((c) => Math.max(c.minWidth ?? 8, 4));
+  const flexIdx = columns.findIndex((c) => c.flexible);
+
+  // Sum of all non-flexible minimums
+  const fixedSum = minWidths.reduce(
+    (sum, w, i) => sum + (i === flexIdx ? 0 : w + paddingPerCol),
+    0,
+  );
+
+  const widths = minWidths.map((min, i) => {
+    if (i === flexIdx) {
+      const remaining = available - fixedSum - paddingPerCol;
+      return Math.max(remaining, min);
+    }
+    return min;
+  });
+
+  // Return as cli-table3 colWidths (content + padding)
+  return widths.map((w) => w + paddingPerCol);
+}
+
+/**
+ * Print a table that adapts to terminal width.
+ *
+ * - Wide terminal  → full bordered table with dynamic column sizing
+ * - Narrow terminal (<70 cols) → compact card-style layout
+ * - Windows cmd without TERM → ASCII borders instead of Unicode
+ * - Content that exceeds column width → truncated with "...", never wraps
+ */
+export function printAdaptiveTable(opts: AdaptiveTableOptions): void {
+  const termWidth = getTerminalWidth();
+  const { columns, rows } = opts;
+
+  // ─── Narrow fallback: compact card layout ───
+  if (termWidth < MIN_TABLE_WIDTH) {
+    printCompactList(
+      rows.map((row) => ({
+        label: stripAnsi(row[0]),
+        fields: columns.slice(1).map((col, i) => ({
+          key: col.header,
+          value: row[i + 1],
+        })),
+      })),
+    );
+    return;
+  }
+
+  // ─── Calculate widths ───
+  const colWidths = calculateColWidths(columns, termWidth);
+  // Content width is colWidth - padding (2)
+  const contentWidths = colWidths.map((w) => w - 2);
+
+  // ─── Pick border style ───
+  const ascii = shouldUseAsciiBorders();
+  const chars = ascii
+    ? {
+        top: "-",
+        "top-mid": "+",
+        "top-left": "+",
+        "top-right": "+",
+        bottom: "-",
+        "bottom-mid": "+",
+        "bottom-left": "+",
+        "bottom-right": "+",
+        left: "|",
+        "left-mid": "+",
+        mid: "-",
+        "mid-mid": "+",
+        right: "|",
+        "right-mid": "+",
+        middle: "|",
+      }
+    : undefined; // cli-table3 default Unicode
+
+  // ─── Fit all cells ───
+  const fittedRows = rows.map((row) =>
+    row.map((cell, i) => fitToWidth(cell, contentWidths[i])),
+  );
+
+  // ─── Build table ───
+  const tableOpts: Record<string, unknown> = {
+    head: columns.map((c) => chalk.bold.cyan(c.header)),
+    colWidths,
+    style: { head: [], border: ascii ? [] : ["gray"] },
+    wordWrap: false,
+  };
+  if (chars) {
+    tableOpts.chars = chars;
+  }
+
+  const table = new Table(tableOpts as ConstructorParameters<typeof Table>[0]);
+  for (const row of fittedRows) {
+    table.push(row);
+  }
+  console.log(table.toString());
+}
+
+/**
+ * Print a compact card-style list for narrow terminals.
+ *
+ * Example:
+ *   node
+ *     Version:     20.11.1
+ *     Status:      available
+ *     Description: JavaScript runtime built on V8
+ */
+export function printCompactList(items: CompactItem[]): void {
+  for (const item of items) {
+    console.log(colors.app(item.label));
+    const maxKeyLen = Math.max(...item.fields.map((f) => f.key.length));
+    for (const f of item.fields) {
+      const padded = f.key.padEnd(maxKeyLen);
+      console.log(`  ${colors.dim(padded + ":")} ${f.value}`);
+    }
+    console.log();
+  }
+}
+
+// ─── Legacy printTable (backward-compatible) ────────────────
+
 export interface TableOptions {
   head: string[];
   rows: string[][];
   colWidths?: number[];
 }
 
+/**
+ * Simple table printer (legacy API kept for callers that don't need
+ * adaptive sizing). For the list command use `printAdaptiveTable`.
+ */
 export function printTable({ head, rows, colWidths }: TableOptions): void {
+  const ascii = shouldUseAsciiBorders();
   const tableOpts: Record<string, unknown> = {
     head: head.map((h) => chalk.bold.cyan(h)),
-    style: { head: [], border: ["gray"] },
+    style: { head: [], border: ascii ? [] : ["gray"] },
+    wordWrap: false,
   };
   if (colWidths) {
     tableOpts.colWidths = colWidths;
-    tableOpts.wordWrap = true;
+  }
+  if (ascii) {
+    tableOpts.chars = {
+      top: "-",
+      "top-mid": "+",
+      "top-left": "+",
+      "top-right": "+",
+      bottom: "-",
+      "bottom-mid": "+",
+      "bottom-left": "+",
+      "bottom-right": "+",
+      left: "|",
+      "left-mid": "+",
+      mid: "-",
+      "mid-mid": "+",
+      right: "|",
+      "right-mid": "+",
+      middle: "|",
+    };
   }
   const table = new Table(tableOpts as ConstructorParameters<typeof Table>[0]);
   for (const row of rows) {

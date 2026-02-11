@@ -21,6 +21,11 @@ import {
   setDebugMode,
   isDebugMode,
   printDebug,
+  truncateText,
+  shouldUseAsciiBorders,
+  getTerminalWidth,
+  printAdaptiveTable,
+  printCompactList,
 } from "../src/output";
 
 const TEST_DIR = path.join(os.tmpdir(), "uas-cli-test");
@@ -560,20 +565,263 @@ describe("Debug Mode Output Suppression", () => {
   });
 });
 
-// ─── List Table Formatting ──────────────────────────────────
+// ─── Adaptive Table Rendering ───────────────────────────────
 
-describe("List Table Formatting", () => {
-  it("truncates long descriptions properly", () => {
-    // The list command truncates descriptions to 38 chars
-    const truncate = (s: string, max: number) =>
-      s.length <= max ? s : s.slice(0, max - 1) + "\u2026";
+describe("truncateText", () => {
+  it("returns short strings unchanged", () => {
+    expect(truncateText("hello", 10)).toBe("hello");
+  });
 
-    const short = "Short desc";
-    const long =
-      "This is a very long description that definitely exceeds the limit";
+  it("truncates long strings with ... suffix", () => {
+    const result = truncateText("This is a very long description", 15);
+    expect(result).toBe("This is a ve...");
+    expect(result.length).toBe(15);
+  });
 
-    expect(truncate(short, 38)).toBe("Short desc");
-    expect(truncate(long, 38).length).toBe(38);
-    expect(truncate(long, 38).endsWith("\u2026")).toBe(true);
+  it("handles exact-length strings", () => {
+    expect(truncateText("exactly10!", 10)).toBe("exactly10!");
+  });
+
+  it("handles very short max gracefully", () => {
+    expect(truncateText("abcdef", 3).length).toBe(3);
+  });
+});
+
+describe("Narrow terminal compact layout", () => {
+  it("prints compact cards when terminal < 70", () => {
+    // Capture console.log output
+    const lines: string[] = [];
+    const spy = vi.spyOn(console, "log").mockImplementation((...args) => {
+      lines.push(String(args[0] ?? ""));
+    });
+
+    // Temporarily override terminal width
+    const origColumns = process.stdout.columns;
+    Object.defineProperty(process.stdout, "columns", {
+      value: 50,
+      writable: true,
+      configurable: true,
+    });
+
+    try {
+      printAdaptiveTable({
+        columns: [
+          { header: "Name", minWidth: 10 },
+          { header: "Version", minWidth: 8 },
+          { header: "Description", minWidth: 12, flexible: true },
+          { header: "Status", minWidth: 10 },
+        ],
+        rows: [["node", "20.11.1", "JavaScript runtime", "available"]],
+      });
+
+      // Should produce compact output (no box chars)
+      const output = lines.join("\n");
+      expect(output).toContain("node");
+      expect(output).toContain("Version");
+      expect(output).toContain("20.11.1");
+      expect(output).toContain("available");
+      // Should NOT contain box-drawing characters
+      expect(output).not.toContain("\u2500"); // ─
+      expect(output).not.toContain("\u2502"); // │
+    } finally {
+      Object.defineProperty(process.stdout, "columns", {
+        value: origColumns,
+        writable: true,
+        configurable: true,
+      });
+      spy.mockRestore();
+    }
+  });
+});
+
+describe("Long description truncation in adaptive table", () => {
+  it("truncates cell content that exceeds column width", () => {
+    const lines: string[] = [];
+    const spy = vi.spyOn(console, "log").mockImplementation((...args) => {
+      lines.push(String(args[0] ?? ""));
+    });
+
+    const origColumns = process.stdout.columns;
+    Object.defineProperty(process.stdout, "columns", {
+      value: 90,
+      writable: true,
+      configurable: true,
+    });
+
+    try {
+      printAdaptiveTable({
+        columns: [
+          { header: "Name", minWidth: 10 },
+          { header: "Desc", minWidth: 12, flexible: true },
+        ],
+        rows: [
+          [
+            "node",
+            "A very long description that should definitely be truncated by the table renderer",
+          ],
+        ],
+      });
+
+      const output = lines.join("\n");
+      // The long description must be truncated (ends with ...)
+      expect(output).toContain("...");
+      // No line in the table body should be wider than terminal
+      for (const line of output.split("\n")) {
+        // Strip ANSI for measurement
+        const clean = line.replace(/\u001b\[[0-9;]*m/g, "");
+        expect(clean.length).toBeLessThanOrEqual(90);
+      }
+    } finally {
+      Object.defineProperty(process.stdout, "columns", {
+        value: origColumns,
+        writable: true,
+        configurable: true,
+      });
+      spy.mockRestore();
+    }
+  });
+});
+
+describe("ASCII border fallback", () => {
+  it("shouldUseAsciiBorders returns true on win32 without TERM", () => {
+    const origPlatform = Object.getOwnPropertyDescriptor(process, "platform");
+    const origTerm = process.env.TERM;
+
+    Object.defineProperty(process, "platform", {
+      value: "win32",
+      configurable: true,
+    });
+    delete process.env.TERM;
+
+    try {
+      expect(shouldUseAsciiBorders()).toBe(true);
+    } finally {
+      if (origPlatform) {
+        Object.defineProperty(process, "platform", origPlatform);
+      }
+      if (origTerm !== undefined) {
+        process.env.TERM = origTerm;
+      }
+    }
+  });
+
+  it("shouldUseAsciiBorders returns false when TERM is set", () => {
+    const origTerm = process.env.TERM;
+    process.env.TERM = "xterm-256color";
+
+    try {
+      expect(shouldUseAsciiBorders()).toBe(false);
+    } finally {
+      if (origTerm !== undefined) {
+        process.env.TERM = origTerm;
+      } else {
+        delete process.env.TERM;
+      }
+    }
+  });
+
+  it("produces ASCII borders on dumb Windows terminal", () => {
+    const lines: string[] = [];
+    const spy = vi.spyOn(console, "log").mockImplementation((...args) => {
+      lines.push(String(args[0] ?? ""));
+    });
+
+    const origPlatform = Object.getOwnPropertyDescriptor(process, "platform");
+    const origTerm = process.env.TERM;
+    const origColumns = process.stdout.columns;
+
+    Object.defineProperty(process, "platform", {
+      value: "win32",
+      configurable: true,
+    });
+    delete process.env.TERM;
+    Object.defineProperty(process.stdout, "columns", {
+      value: 80,
+      writable: true,
+      configurable: true,
+    });
+
+    try {
+      printAdaptiveTable({
+        columns: [
+          { header: "Name", minWidth: 10 },
+          { header: "Value", minWidth: 10, flexible: true },
+        ],
+        rows: [["test", "data"]],
+      });
+
+      const output = lines.join("\n");
+      // Should use ASCII chars
+      expect(output).toContain("+");
+      expect(output).toContain("|");
+      expect(output).toContain("-");
+      // Should NOT contain Unicode box chars
+      expect(output).not.toContain("\u2500"); // ─
+      expect(output).not.toContain("\u2502"); // │
+      expect(output).not.toContain("\u250C"); // ┌
+    } finally {
+      if (origPlatform) {
+        Object.defineProperty(process, "platform", origPlatform);
+      }
+      if (origTerm !== undefined) {
+        process.env.TERM = origTerm;
+      } else {
+        delete process.env.TERM;
+      }
+      Object.defineProperty(process.stdout, "columns", {
+        value: origColumns,
+        writable: true,
+        configurable: true,
+      });
+      spy.mockRestore();
+    }
+  });
+});
+
+describe("Table row width consistency", () => {
+  it("all output lines have equal visible width", () => {
+    const lines: string[] = [];
+    const spy = vi.spyOn(console, "log").mockImplementation((...args) => {
+      lines.push(String(args[0] ?? ""));
+    });
+
+    const origColumns = process.stdout.columns;
+    Object.defineProperty(process.stdout, "columns", {
+      value: 80,
+      writable: true,
+      configurable: true,
+    });
+
+    try {
+      printAdaptiveTable({
+        columns: [
+          { header: "A", minWidth: 8 },
+          { header: "B", minWidth: 8, flexible: true },
+          { header: "C", minWidth: 8 },
+        ],
+        rows: [
+          ["short", "medium length text", "ok"],
+          ["x", "y", "z"],
+          ["longer name", "quite a long description here", "done"],
+        ],
+      });
+
+      const output = lines.join("\n");
+      const tableLines = output.split("\n").filter((l) => l.trim().length > 0);
+      const widths = tableLines.map(
+        (l) => l.replace(/\u001b\[[0-9;]*m/g, "").length,
+      );
+
+      // All lines should be the same width (borders + padding makes them equal)
+      const uniqueWidths = [...new Set(widths)];
+      expect(uniqueWidths.length).toBe(1);
+    } finally {
+      Object.defineProperty(process.stdout, "columns", {
+        value: origColumns,
+        writable: true,
+        configurable: true,
+      });
+      spy.mockRestore();
+    }
   });
 });
