@@ -33,4 +33,4 @@ The catalog is a collection of install recipes — YAML files that describe how 
 
 ## Implementation
 
-*Will be built when Phase 4 begins.*
+_Will be built when Phase 4 begins._

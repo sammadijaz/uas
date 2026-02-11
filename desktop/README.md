@@ -28,4 +28,4 @@ Framework decision (Electron vs Tauri) deferred until Phase 6.
 
 ## Implementation
 
-*Will be built when Phase 6 begins.*
+_Will be built when Phase 6 begins._

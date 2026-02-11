@@ -29,4 +29,4 @@ uas dry-run <command>       Preview any command without executing
 
 ## Implementation
 
-*Will be built when Phase 3 begins.*
+_Will be built when Phase 3 begins._

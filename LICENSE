@@ -41,6 +41,7 @@ MIT was chosen because:
    and contributions without legal friction.
 
 Alternatives considered:
+
 - Apache 2.0: Patent clause is nice but adds complexity we don't need yet.
 - GPL/AGPL: Would reduce corporate adoption. UAS is a tool, not a library
   that needs copyleft protection.

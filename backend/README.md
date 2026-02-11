@@ -28,4 +28,4 @@ See [/docs/security-model.md](../docs/security-model.md) for trust boundaries.
 
 ## Implementation
 
-*Will be built when Phase 5 begins.*
+_Will be built when Phase 5 begins._

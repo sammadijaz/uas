@@ -41,6 +41,7 @@
 ```
 
 ### Boundary 1: Catalog Recipes → Engine
+
 - Recipes are YAML files that describe installation steps
 - **Threat:** Malicious recipe could execute arbitrary commands, download malware, or modify system files
 - **Mitigation:**
@@ -51,6 +52,7 @@
   - Future: signing and reputation system
 
 ### Boundary 2: Backend API → Client
+
 - The backend stores profiles and history
 - **Threat:** Compromised backend could serve malicious profiles or manipulate sync data
 - **Mitigation:**
@@ -61,6 +63,7 @@
   - Authentication tokens scoped with minimal permissions
 
 ### Boundary 3: Downloaded Installers → Engine
+
 - Installers are downloaded from URLs specified in recipes
 - **Threat:** MITM attacks, compromised mirrors, tampered binaries
 - **Mitigation:**
@@ -70,6 +73,7 @@
   - Download to temp directory, verify before executing
 
 ### Boundary 4: User Input → CLI / Desktop
+
 - Users provide app names, profile names, flags
 - **Threat:** Injection attacks (path traversal, command injection)
 - **Mitigation:**
@@ -82,12 +86,14 @@
 ## Privilege Model
 
 ### Default: User Level
+
 - UAS runs as the current Windows user
 - Can install to: `%LOCALAPPDATA%`, `%USERPROFILE%`, user-writable directories
 - Can modify: User-level environment variables, user-level PATH
 - Can write: User-level registry keys (`HKCU`)
 
 ### Elevated: Administrator
+
 - Required for: MSI installations to `Program Files`, system-level PATH, `HKLM` registry
 - Elevation is requested **per-operation** via Windows UAC
 - The engine explicitly marks which operations need elevation
@@ -98,25 +104,25 @@
 
 ## Data at Rest
 
-| Data | Location | Sensitivity | Protection |
-|---|---|---|---|
-| State DB | `%LOCALAPPDATA%\uas\state.db` | Medium (install history) | File permissions (user-only) |
-| Auth tokens | `%LOCALAPPDATA%\uas\auth.json` | High | File permissions + future: Windows Credential Manager |
-| Downloaded installers | `%TEMP%\uas\downloads\` | Low (public binaries) | Cleaned after install |
-| Catalog cache | `%LOCALAPPDATA%\uas\catalog\` | Low | Refreshed on sync |
+| Data                  | Location                       | Sensitivity              | Protection                                            |
+| --------------------- | ------------------------------ | ------------------------ | ----------------------------------------------------- |
+| State DB              | `%LOCALAPPDATA%\uas\state.db`  | Medium (install history) | File permissions (user-only)                          |
+| Auth tokens           | `%LOCALAPPDATA%\uas\auth.json` | High                     | File permissions + future: Windows Credential Manager |
+| Downloaded installers | `%TEMP%\uas\downloads\`        | Low (public binaries)    | Cleaned after install                                 |
+| Catalog cache         | `%LOCALAPPDATA%\uas\catalog\`  | Low                      | Refreshed on sync                                     |
 
 ---
 
 ## Threat Summary
 
-| Threat | Likelihood | Impact | Mitigation Status |
-|---|---|---|---|
-| Malicious recipe in catalog | Medium | High | ⬜ Schema validation (Phase 1), signing (future) |
-| Tampered installer download | Low | Critical | ⬜ Checksum verification (Phase 2) |
-| Compromised backend API | Low | Medium | ⬜ Client-side validation (Phase 5) |
-| Path traversal in app names | Low | Medium | ⬜ Input sanitization (Phase 2) |
-| Credential theft from disk | Medium | High | ⬜ Credential Manager integration (Phase 3) |
-| Privilege escalation via engine | Low | Critical | ⬜ Per-operation elevation (Phase 2) |
+| Threat                          | Likelihood | Impact   | Mitigation Status                                |
+| ------------------------------- | ---------- | -------- | ------------------------------------------------ |
+| Malicious recipe in catalog     | Medium     | High     | ⬜ Schema validation (Phase 1), signing (future) |
+| Tampered installer download     | Low        | Critical | ⬜ Checksum verification (Phase 2)               |
+| Compromised backend API         | Low        | Medium   | ⬜ Client-side validation (Phase 5)              |
+| Path traversal in app names     | Low        | Medium   | ⬜ Input sanitization (Phase 2)                  |
+| Credential theft from disk      | Medium     | High     | ⬜ Credential Manager integration (Phase 3)      |
+| Privilege escalation via engine | Low        | Critical | ⬜ Per-operation elevation (Phase 2)             |
 
 ---
 

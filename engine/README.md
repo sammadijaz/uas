@@ -24,8 +24,8 @@ The engine is the **heart of UAS**. It is the only component that interacts with
 
 ## Internal Architecture
 
-*Will be documented when Phase 2 begins.*
+_Will be documented when Phase 2 begins._
 
 ## API Surface
 
-*Will be defined when Phase 2 begins.*
+_Will be defined when Phase 2 begins._

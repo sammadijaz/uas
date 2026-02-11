@@ -56,6 +56,7 @@ UAS is a layered system with strict dependency direction: UI layers depend on th
 ## Component Responsibilities
 
 ### Install Engine (`/engine`)
+
 **The single most important component.**
 
 - Parses install recipes (YAML manifests describing how to install software)
@@ -68,6 +69,7 @@ UAS is a layered system with strict dependency direction: UI layers depend on th
 The engine exposes a programmatic API. It has **zero UI logic**. It does not know whether it's being called from a CLI or a GUI.
 
 ### CLI Tool (`/cli`)
+
 A command-line interface that wraps the engine.
 
 - Provides commands: `install`, `uninstall`, `profile apply`, `sync`, `diff`, `dry-run`
@@ -76,6 +78,7 @@ A command-line interface that wraps the engine.
 - **Delegates all real work to the engine**
 
 ### Desktop App (`/desktop`)
+
 A GUI application that wraps the engine.
 
 - Provides visual catalog browsing
@@ -85,6 +88,7 @@ A GUI application that wraps the engine.
 - Must be feature-equivalent with the CLI (same engine, different interface)
 
 ### Backend API (`/backend`)
+
 A web service for cloud features.
 
 - User authentication
@@ -94,6 +98,7 @@ A web service for cloud features.
 - Supports both hosted and self-hosted deployment
 
 ### Catalog (`/catalog`)
+
 A collection of install recipes.
 
 - Each recipe is a YAML file describing how to install one application
@@ -102,6 +107,7 @@ A collection of install recipes.
 - The catalog is the single source of truth for "how to install X"
 
 ### Infrastructure (`/infra`)
+
 Build, release, and distribution tooling.
 
 - CI/CD pipelines
@@ -120,6 +126,7 @@ Desktop ──────▶ Backend (optional, for sync)
 ```
 
 **Forbidden dependencies:**
+
 - Engine MUST NOT depend on CLI or Desktop
 - CLI MUST NOT depend on Desktop (or vice versa)
 - Catalog MUST NOT depend on anything (it's pure data)

@@ -4,12 +4,12 @@ This folder contains all project-level documentation for the Universal App Store
 
 ## Contents
 
-| Document | Purpose |
-|---|---|
-| [architecture.md](architecture.md) | System architecture, component boundaries, data flow |
-| [glossary.md](glossary.md) | Canonical terminology — every term used across UAS |
+| Document                               | Purpose                                                |
+| -------------------------------------- | ------------------------------------------------------ |
+| [architecture.md](architecture.md)     | System architecture, component boundaries, data flow   |
+| [glossary.md](glossary.md)             | Canonical terminology — every term used across UAS     |
 | [security-model.md](security-model.md) | Trust boundaries, threat model, privilege requirements |
-| [specs/](specs/) | Formal specifications for recipes, profiles, lifecycle |
+| [specs/](specs/)                       | Formal specifications for recipes, profiles, lifecycle |
 
 ## Rules
 

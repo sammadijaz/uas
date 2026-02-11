@@ -24,4 +24,4 @@ Build, release, and distribution tooling for UAS itself.
 
 ## Implementation
 
-*Will be built when Phase 7 begins.*
+_Will be built when Phase 7 begins._
