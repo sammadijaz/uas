@@ -18,8 +18,7 @@ if (-not $SkipDesktop) {
 
 $failed = @()
 $passed = @()
-$totalTests = 0
-$totalTime = 0
+
 
 function Write-Status($pkg, $msg, $color) {
     Write-Host "[$pkg] " -ForegroundColor Cyan -NoNewline
@@ -59,14 +58,11 @@ foreach ($pkg in $packages) {
             $output | ForEach-Object { Write-Host "  $_" }
         }
 
-        # Try to parse test count from vitest output
-        $testsLine = $output | Select-String "Tests\s+(\d+)\s+passed"
-        $timeLine  = $output | Select-String "Duration\s+([\d.]+)"
-
         if ($exitCode -eq 0) {
             Write-Status $pkg "PASS" "Green"
             $passed += $pkg
-        } else {
+        }
+        else {
             Write-Status $pkg "FAIL (exit $exitCode)" "Red"
             $failed += $pkg
         }

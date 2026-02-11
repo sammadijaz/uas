@@ -1,0 +1,33 @@
+{
+  "name": "uas",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Universal App Store — Windows-first, account-synced, stateful environment installer",
+  "license": "MIT",
+  "author": "UAS Project",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/user/uas.git"
+  },
+  "scripts": {
+    "build": "powershell -ExecutionPolicy Bypass -File infra/scripts/build-all.ps1",
+    "test": "powershell -ExecutionPolicy Bypass -File infra/scripts/test-all.ps1",
+    "build:engine": "cd engine && npm run build",
+    "build:catalog": "cd catalog && npm run build",
+    "build:cli": "cd cli && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "build:desktop": "cd desktop && npm run build",
+    "test:engine": "cd engine && npm test",
+    "test:catalog": "cd catalog && npm test",
+    "test:cli": "cd cli && npm test",
+    "test:backend": "cd backend && npm test",
+    "test:desktop": "cd desktop && npm test",
+    "start:backend": "cd backend && node dist/server.js",
+    "start:desktop": "cd desktop && npx electron .",
+    "docker:up": "cd infra/docker && docker compose up -d",
+    "docker:down": "cd infra/docker && docker compose down"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

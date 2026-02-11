@@ -185,8 +185,8 @@ export class Catalog {
     if (!fs.existsSync(this.profilesDir)) return [];
     return fs
       .readdirSync(this.profilesDir)
-      .filter((f) => f.endsWith(".yaml"))
-      .map((f) => f.replace(".yaml", ""));
+      .filter((f: string) => f.endsWith(".yaml"))
+      .map((f: string) => f.replace(".yaml", ""));
   }
 
   /**
@@ -219,7 +219,7 @@ export class Catalog {
 
     const dirs = fs
       .readdirSync(this.recipesDir, { withFileTypes: true })
-      .filter((d) => d.isDirectory());
+      .filter((d: fs.Dirent) => d.isDirectory());
 
     for (const dir of dirs) {
       const recipeFile = path.join(this.recipesDir, dir.name, "recipe.yaml");

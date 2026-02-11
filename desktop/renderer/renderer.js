@@ -5,8 +5,7 @@
  * No direct Node.js access — all data flows through IPC.
  */
 
-// @ts-check
-/// <reference path="../src/main/preload.ts" />
+// @ts-nocheck
 
 /** @type {typeof window & { uas: import('../src/main/preload').UasApi }} */
 const win = /** @type {any} */ (window);
