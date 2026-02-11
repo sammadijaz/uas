@@ -60,6 +60,14 @@ export {
 } from "./utils/variables";
 export { createLogger } from "./utils/logger";
 export type { Logger } from "./utils/logger";
+export {
+  normalizeSemver,
+  parseSemver,
+  compareSemver,
+  isValidSemver,
+  classifyVersionChange,
+} from "./utils/semver";
+export type { SemverParts } from "./utils/semver";
 
 // Windows pipeline (exposed for advanced use / testing)
 export {

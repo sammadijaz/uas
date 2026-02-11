@@ -1,5 +1,5 @@
 /**
- * UAS CLI — Install Command
+ * UAS CLI -- Install Command
  *
  * Installs an application from the catalog.
  *
@@ -8,12 +8,23 @@
  *   uas install <app> --version  Install specific version
  *   uas install <app> --dry-run  Preview without installing
  *
- * Flow:
- *   1. Load recipe from catalog by app ID
- *   2. Create engine instance
- *   3. Wire up progress events to spinner/output
- *   4. Call engine.install()
- *   5. Report result
+ * Output:
+ *   Beautiful staged output with check marks for each phase.
+ *   Only shows debug/log info when --debug is set.
+ *
+ *   uas install node
+ *
+ *   Installing Node.js v22.11.0
+ *
+ *     ✔ Validated recipe
+ *     ✔ Resolved download URL
+ *     ✔ Downloaded installer (cached)
+ *     ✔ Verified checksum
+ *     ✔ Executed installer
+ *     ✔ Applied 2 side effects
+ *     ✔ Confirmed: node --version -> v22.11.0
+ *
+ *   ✔ Installed Node.js v22.11.0 in 4.2s
  */
 
 import { Command } from "commander";
@@ -25,11 +36,42 @@ import {
   printError,
   printDryRun,
   printInfo,
+  printHeader,
+  printStageSuccess,
+  printStageError,
+  printStageInfo,
+  printDetail,
+  printBlank,
+  printDebug,
+  isDebugMode,
   createSpinner,
   formatState,
   formatDuration,
+  formatErrorCategory,
   colors,
 } from "../output";
+
+/** Stages the spinner cycles through */
+const STAGE_MESSAGES: Partial<Record<ExecutionState, string>> = {
+  VALIDATING: "Validating recipe...",
+  RESOLVING: "Resolving download URL...",
+  DOWNLOADING: "Downloading installer...",
+  VERIFYING: "Verifying checksum...",
+  EXECUTING: "Running installer...",
+  SIDE_EFFECTS: "Applying side effects...",
+  CONFIRMING: "Confirming installation...",
+};
+
+/** After each stage completes, print a check-marked line */
+const STAGE_DONE: Partial<Record<ExecutionState, string>> = {
+  VALIDATING: "Validated recipe",
+  RESOLVING: "Resolved download URL",
+  DOWNLOADING: "Downloaded installer",
+  VERIFYING: "Verified checksum",
+  EXECUTING: "Executed installer",
+  SIDE_EFFECTS: "Applied side effects",
+  CONFIRMING: "Confirmed installation",
+};
 
 export function registerInstallCommand(program: Command): void {
   program
@@ -64,31 +106,69 @@ export function registerInstallCommand(program: Command): void {
           recipe.version = opts.version;
         }
 
-        // 2. Create engine
-        const engineOpts = getEngineOptions(opts.verbose, opts.dryRun);
+        // 2. Create engine (use debug-aware verbose mode)
+        const verbose = opts.verbose || isDebugMode();
+        const engineOpts = getEngineOptions(verbose, opts.dryRun);
         const engine = new UASEngine(engineOpts);
         await engine.init();
 
+        // 3. Print header
         if (opts.dryRun) {
           printDryRun(
             `Would install ${colors.app(recipe.name)} v${colors.version(recipe.version)}`,
           );
+        } else {
+          printHeader(
+            `Installing ${colors.app(recipe.name)} v${colors.version(recipe.version)}`,
+          );
         }
 
-        // 3. Wire up progress display
-        const spinner = createSpinner(`Installing ${recipe.name}...`);
-        let lastState = "";
+        // 4. Wire up progress display
+        const spinner = createSpinner("Starting...");
+        let lastState: ExecutionState | "" = "";
+        const completedStages: ExecutionState[] = [];
 
         engine.on((event: EngineEvent) => {
           if (event.type === "state_change") {
-            const data = event.data as { state: ExecutionState };
+            const data = event.data as {
+              state: ExecutionState;
+              message?: string;
+            };
+
+            // When entering a new stage, mark the previous one as done
+            if (
+              lastState &&
+              lastState !== data.state &&
+              STAGE_DONE[lastState]
+            ) {
+              spinner.stop();
+              printStageSuccess(STAGE_DONE[lastState]!);
+              completedStages.push(lastState);
+              spinner.start();
+            }
+
             lastState = data.state;
-            spinner.text = `${formatState(data.state)} — ${recipe.name} v${recipe.version}`;
+
+            // Update spinner text to current stage
+            const stageMsg = STAGE_MESSAGES[data.state];
+            if (stageMsg) {
+              spinner.text = stageMsg;
+            }
+
+            // Debug logging
+            if (data.message) {
+              printDebug(`${data.state}: ${data.message}`);
+            }
           }
+
           if (event.type === "progress") {
-            const data = event.data as { progress_percent?: number };
+            const data = event.data as {
+              progress_percent?: number;
+              bytes_downloaded?: number;
+              bytes_total?: number;
+            };
             if (data.progress_percent !== undefined) {
-              spinner.text = `Downloading ${recipe.name}... ${data.progress_percent}%`;
+              spinner.text = `Downloading installer... ${data.progress_percent}%`;
             }
           }
         });
@@ -96,7 +176,7 @@ export function registerInstallCommand(program: Command): void {
         spinner.start();
         const startTime = Date.now();
 
-        // 4. Execute installation
+        // 5. Execute installation
         try {
           const result = await engine.install(recipe, {
             dry_run: opts.dryRun,
@@ -106,43 +186,88 @@ export function registerInstallCommand(program: Command): void {
           spinner.stop();
           const elapsed = Date.now() - startTime;
 
+          // Print the final stage completion if we missed it
+          if (
+            lastState &&
+            STAGE_DONE[lastState] &&
+            !completedStages.includes(lastState)
+          ) {
+            if (result.final_state === "COMPLETED") {
+              printStageSuccess(STAGE_DONE[lastState]!);
+            }
+          }
+
           if (result.final_state === "COMPLETED") {
-            if (opts.dryRun) {
+            // Check for "already_installed" quick return (no stages printed)
+            if (elapsed < 500 && completedStages.length === 0) {
+              printBlank();
+              printSuccess(
+                `${colors.app(recipe.name)} v${colors.version(recipe.version)} is already installed`,
+              );
+            } else if (opts.dryRun) {
+              printBlank();
               printDryRun(
                 `Dry run complete for ${colors.app(recipe.name)} v${colors.version(recipe.version)}`,
               );
             } else {
+              // Side effects detail
+              if (result.side_effects_applied.length > 0) {
+                printStageInfo(
+                  `Applied ${result.side_effects_applied.length} side effect(s)`,
+                );
+                for (const effect of result.side_effects_applied) {
+                  printDebug(`  ${effect.type}: ${effect.target}`);
+                }
+              }
+
+              printBlank();
               printSuccess(
-                `Installed ${colors.app(recipe.name)} v${colors.version(recipe.version)} ` +
-                  `in ${formatDuration(elapsed)}`,
+                `Installed ${colors.app(recipe.name)} v${colors.version(recipe.version)} in ${formatDuration(elapsed)}`,
               );
             }
+          } else {
+            // ─── Failure output ───
+            printBlank();
+            printError(
+              `Failed to install ${colors.app(recipe.name)} v${colors.version(recipe.version)}`,
+            );
 
-            if (result.side_effects_applied.length > 0) {
-              printInfo(
-                `Applied ${result.side_effects_applied.length} side effect(s):`,
-              );
-              for (const effect of result.side_effects_applied) {
-                console.log(
-                  `  ${colors.dim("\u2022")} ${effect.type}: ${effect.target}`,
+            if (result.error) {
+              printDetail("Reason", formatErrorCategory(result.error.category));
+              printDetail("Details", result.error.message);
+              printDetail("Stage", formatState(result.error.state));
+
+              if (result.error.category === "DOWNGRADE_BLOCKED") {
+                printBlank();
+                printInfo(
+                  `Use ${colors.bold("--force")} to override the downgrade check.`,
                 );
               }
             }
-          } else {
-            printError(`Installation failed: ${result.final_state}`);
-            if (result.error) {
-              console.error(
-                `  ${colors.dim("Category:")} ${result.error.category}`,
-              );
-              console.error(
-                `  ${colors.dim("Message:")}  ${result.error.message}`,
+
+            if (result.side_effects_rolled_back.length > 0) {
+              printBlank();
+              printInfo(
+                `Rolled back ${result.side_effects_rolled_back.length} side effect(s)`,
               );
             }
+
             process.exit(1);
           }
         } catch (err) {
           spinner.stop();
-          printError(`Unexpected error: ${(err as Error).message}`);
+          printBlank();
+          printError(`Unexpected error during installation`);
+
+          if (isDebugMode()) {
+            console.error(err);
+          } else {
+            printDetail("Message", (err as Error).message);
+            printInfo(
+              `Use ${colors.bold("--debug")} to see the full stack trace.`,
+            );
+          }
+
           process.exit(1);
         } finally {
           engine.close();

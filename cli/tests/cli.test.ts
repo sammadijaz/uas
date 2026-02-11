@@ -5,13 +5,20 @@
  * and new commands (list, remove, save, restore, env).
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import * as path from "path";
 import * as os from "os";
 import * as fs from "fs";
 import { stringify as stringifyYaml, parse as parseYaml } from "yaml";
 import { loadRecipe, listRecipes, searchRecipes } from "../src/catalog";
-import { formatBytes, formatDuration } from "../src/output";
+import {
+  formatBytes,
+  formatDuration,
+  formatState,
+  formatErrorCategory,
+  setDebugMode,
+  isDebugMode,
+} from "../src/output";
 
 const TEST_DIR = path.join(os.tmpdir(), "uas-cli-test");
 const TEST_CATALOG = path.join(TEST_DIR, "catalog");
@@ -83,6 +90,58 @@ describe("Output Formatting", () => {
 
     it("formats minutes", () => {
       expect(formatDuration(125000)).toBe("2m 5s");
+    });
+  });
+
+  describe("formatState", () => {
+    it("returns human-friendly label for EXECUTING", () => {
+      // formatState wraps in ANSI colors; just verify it returns a string
+      const result = formatState("EXECUTING");
+      expect(result).toBeTruthy();
+      expect(typeof result).toBe("string");
+    });
+
+    it("returns a string for unknown states", () => {
+      const result = formatState("UNKNOWN_STATE");
+      expect(result).toBeTruthy();
+    });
+  });
+
+  describe("formatErrorCategory", () => {
+    it("maps DOWNGRADE_BLOCKED to human message", () => {
+      expect(formatErrorCategory("DOWNGRADE_BLOCKED")).toBe(
+        "Downgrade not allowed",
+      );
+    });
+
+    it("maps NETWORK_ERROR to human message", () => {
+      expect(formatErrorCategory("NETWORK_ERROR")).toBe(
+        "Network or download failure",
+      );
+    });
+
+    it("passes through unknown categories", () => {
+      expect(formatErrorCategory("UNKNOWN_CAT")).toBe("UNKNOWN_CAT");
+    });
+  });
+
+  describe("debug mode", () => {
+    afterEach(() => setDebugMode(false));
+
+    it("defaults to false", () => {
+      setDebugMode(false);
+      expect(isDebugMode()).toBe(false);
+    });
+
+    it("can be enabled", () => {
+      setDebugMode(true);
+      expect(isDebugMode()).toBe(true);
+    });
+
+    it("can be toggled off", () => {
+      setDebugMode(true);
+      setDebugMode(false);
+      expect(isDebugMode()).toBe(false);
     });
   });
 });

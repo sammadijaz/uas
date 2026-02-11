@@ -44,10 +44,7 @@ export async function runElevated(
   logger: Logger,
   waitForExit: boolean = true,
 ): Promise<{ exitCode: number; elevated: boolean; error?: string }> {
-  logger.info(
-    { command, argsCount: args.length },
-    "Requesting UAC elevation",
-  );
+  logger.info({ command, argsCount: args.length }, "Requesting UAC elevation");
 
   // Escape arguments for PowerShell
   // Each arg is wrapped in single quotes with internal quotes escaped
@@ -57,9 +54,7 @@ export async function runElevated(
   });
 
   const argsArray =
-    escapedArgs.length > 0
-      ? `-ArgumentList @(${escapedArgs.join(", ")})`
-      : "";
+    escapedArgs.length > 0 ? `-ArgumentList @(${escapedArgs.join(", ")})` : "";
 
   const waitFlag = waitForExit ? "-Wait" : "";
 
@@ -123,10 +118,7 @@ export async function runElevated(
       return { exitCode, elevated: false, error: msg };
     }
 
-    logger.error(
-      { exitCode, error: errorMessage },
-      "Elevated command failed",
-    );
+    logger.error({ exitCode, error: errorMessage }, "Elevated command failed");
     return { exitCode, elevated: true, error: errorMessage };
   }
 }
@@ -137,9 +129,7 @@ export async function runElevated(
  *
  * Use this at the START of operations that need admin, before doing any work.
  */
-export async function ensureElevated(
-  logger: Logger,
-): Promise<ElevationStatus> {
+export async function ensureElevated(logger: Logger): Promise<ElevationStatus> {
   const status = await checkElevation(logger);
   if (status.elevated) return status;
 

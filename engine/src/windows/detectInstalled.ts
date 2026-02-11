@@ -103,7 +103,10 @@ export async function detectVersionByCommand(
     // If no regex, command success means *something* is installed but version unknown
     return "unknown";
   } catch {
-    logger.debug({ cmd: versionCmd }, "Version command failed (app likely not installed)");
+    logger.debug(
+      { cmd: versionCmd },
+      "Version command failed (app likely not installed)",
+    );
     return null;
   }
 }
@@ -184,7 +187,8 @@ export interface DetectInstalledOptions {
 export async function detectInstalled(
   opts: DetectInstalledOptions,
 ): Promise<DetectionResult> {
-  const { appId, appName, versionCmd, versionRegex, targetVersion, logger } = opts;
+  const { appId, appName, versionCmd, versionRegex, targetVersion, logger } =
+    opts;
 
   // 1. State file
   const state = readAppState(appId);
@@ -203,7 +207,11 @@ export async function detectInstalled(
 
   // 2. Version command
   if (versionCmd) {
-    const detected = await detectVersionByCommand(versionCmd, versionRegex || "", logger);
+    const detected = await detectVersionByCommand(
+      versionCmd,
+      versionRegex || "",
+      logger,
+    );
     if (detected && detected === targetVersion) {
       logger.info(
         { appId, version: detected, source: "version_cmd" },
@@ -240,6 +248,9 @@ export async function detectInstalled(
     };
   }
 
-  logger.debug({ appId, targetVersion }, "App not detected at target version — install needed");
+  logger.debug(
+    { appId, targetVersion },
+    "App not detected at target version — install needed",
+  );
   return { found: false };
 }

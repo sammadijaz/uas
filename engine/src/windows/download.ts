@@ -11,11 +11,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { Logger } from "../utils/logger";
 import { computeFileHash } from "../verifier";
-import {
-  downloadFile,
-  DownloadResult,
-  ProgressCallback,
-} from "../downloader";
+import { downloadFile, DownloadResult, ProgressCallback } from "../downloader";
 import { DownloadDecision } from "./types";
 
 export interface SmartDownloadOptions {
@@ -60,7 +56,10 @@ export async function evaluateDownload(
   }
 
   // File exists — verify checksum
-  logger.debug({ path: filePath }, "Cached installer found — verifying checksum");
+  logger.debug(
+    { path: filePath },
+    "Cached installer found — verifying checksum",
+  );
   try {
     const actual = await computeFileHash(filePath);
     const expected = expectedSha256.toLowerCase().trim();
@@ -127,7 +126,13 @@ export async function smartDownload(
   logger.info({ url, dest: filePath }, "Downloading installer");
   let result: DownloadResult;
   try {
-    result = await downloadFile(url, destDir, resolvedFilename, onProgress, logger);
+    result = await downloadFile(
+      url,
+      destDir,
+      resolvedFilename,
+      onProgress,
+      logger,
+    );
   } catch (err: unknown) {
     // Clean up partial file on failure
     if (fs.existsSync(filePath)) {

@@ -9,7 +9,11 @@
 
 import * as fs from "fs";
 import { Logger } from "../utils/logger";
-import { computeFileHash, verifyChecksum, VerificationResult } from "../verifier";
+import {
+  computeFileHash,
+  verifyChecksum,
+  VerificationResult,
+} from "../verifier";
 
 export { computeFileHash, verifyChecksum };
 export type { VerificationResult };

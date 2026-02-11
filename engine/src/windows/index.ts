@@ -40,11 +40,7 @@ export {
 } from "./detectInstalled";
 
 // Elevation handling
-export {
-  checkElevation,
-  runElevated,
-  ensureElevated,
-} from "./elevate";
+export { checkElevation, runElevated, ensureElevated } from "./elevate";
 
 // Shared types
 export {

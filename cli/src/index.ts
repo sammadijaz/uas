@@ -30,6 +30,7 @@
  */
 
 import { Command } from "commander";
+import { setDebugMode } from "./output";
 import { registerInstallCommand } from "./commands/install";
 import { registerUninstallCommand } from "./commands/uninstall";
 import { registerRemoveCommand } from "./commands/remove";
@@ -48,9 +49,16 @@ const program = new Command();
 program
   .name("uas")
   .description(
-    "Universal App Store — install, save, and restore your entire dev environment",
+    "Universal App Store -- install, save, and restore your entire dev environment",
   )
-  .version("0.1.0");
+  .version("0.1.0", "-V, --version", "Print the UAS version")
+  .option("--debug", "Show verbose debug output")
+  .hook("preAction", (_thisCommand, _actionCommand) => {
+    const opts = program.opts();
+    if (opts.debug) {
+      setDebugMode(true);
+    }
+  });
 
 // ─── Core commands (most-used first) ────────────────────────
 registerListCommand(program);
@@ -72,6 +80,10 @@ registerLoginCommand(program);
 
 // Parse command line
 program.parseAsync(process.argv).catch((err) => {
-  console.error(`Error: ${err.message}`);
+  if (program.opts().debug) {
+    console.error(err);
+  } else {
+    console.error(`Error: ${err.message}`);
+  }
   process.exit(1);
 });

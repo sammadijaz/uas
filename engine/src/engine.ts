@@ -47,6 +47,7 @@ import {
   removeAppState,
   ensureElevated,
 } from "./windows";
+import { classifyVersionChange, normalizeSemver } from "./utils/semver";
 
 const execAsync = promisify(exec);
 
@@ -218,23 +219,52 @@ export class UASEngine {
 
     // Check if already installed at this version (SQLite state DB)
     const existing = this.stateDb.getInstalledApp(recipe.id);
-    if (existing && existing.version === recipe.version && !options.force) {
-      this.logger.info(
-        { app: recipe.id, version: recipe.version },
-        "Already installed at requested version (state DB)",
-      );
-      transition("COMPLETED", "success", { reason: "already_installed" });
-      return {
-        execution_id: executionId,
-        app_id: recipe.id,
-        version: recipe.version,
-        final_state: "COMPLETED",
-        started_at: startedAt,
-        finished_at: new Date().toISOString(),
-        dry_run: dryRun,
-        side_effects_applied: [],
-        side_effects_rolled_back: [],
-      };
+    if (existing && !options.force) {
+      const change = classifyVersionChange(existing.version, recipe.version);
+
+      if (change === "same") {
+        this.logger.info(
+          { app: recipe.id, version: recipe.version },
+          "Already installed at requested version (state DB)",
+        );
+        transition("COMPLETED", "success", { reason: "already_installed" });
+        return {
+          execution_id: executionId,
+          app_id: recipe.id,
+          version: recipe.version,
+          final_state: "COMPLETED",
+          started_at: startedAt,
+          finished_at: new Date().toISOString(),
+          dry_run: dryRun,
+          side_effects_applied: [],
+          side_effects_rolled_back: [],
+        };
+      }
+
+      if (change === "downgrade") {
+        return fail(
+          "DOWNGRADE_BLOCKED",
+          `Cannot downgrade ${recipe.name} from v${normalizeSemver(existing.version)} to v${normalizeSemver(recipe.version)}. ` +
+            `Use --force to override.`,
+          "VALIDATING",
+          {
+            installed_version: existing.version,
+            target_version: recipe.version,
+          },
+        );
+      }
+
+      // change === "upgrade" or "unknown" — proceed with install
+      if (change === "upgrade") {
+        this.logger.info(
+          {
+            app: recipe.id,
+            from: existing.version,
+            to: recipe.version,
+          },
+          `Upgrading ${recipe.name} from v${normalizeSemver(existing.version)} to v${normalizeSemver(recipe.version)}`,
+        );
+      }
     }
 
     // Check if already installed via OS-level detection (idempotency)
@@ -248,10 +278,72 @@ export class UASEngine {
         logger: this.logger,
       });
 
-      if (detection.found) {
+      if (detection.found && detection.version) {
+        const detChange = classifyVersionChange(
+          detection.version,
+          recipe.version,
+        );
+
+        if (detChange === "same") {
+          this.logger.info(
+            {
+              app: recipe.id,
+              version: detection.version,
+              source: detection.source,
+            },
+            `Already installed at requested version. Skipping.`,
+          );
+          transition("COMPLETED", "success", {
+            reason: "already_installed",
+            detection_source: detection.source,
+            detected_version: detection.version,
+          });
+          return {
+            execution_id: executionId,
+            app_id: recipe.id,
+            version: recipe.version,
+            final_state: "COMPLETED",
+            started_at: startedAt,
+            finished_at: new Date().toISOString(),
+            dry_run: dryRun,
+            side_effects_applied: [],
+            side_effects_rolled_back: [],
+          };
+        }
+
+        if (detChange === "downgrade") {
+          return fail(
+            "DOWNGRADE_BLOCKED",
+            `Cannot downgrade ${recipe.name} from v${normalizeSemver(detection.version)} to v${normalizeSemver(recipe.version)}. ` +
+              `Use --force to override.`,
+            "VALIDATING",
+            {
+              installed_version: detection.version,
+              target_version: recipe.version,
+              detection_source: detection.source,
+            },
+          );
+        }
+
+        if (detChange === "upgrade") {
+          this.logger.info(
+            {
+              app: recipe.id,
+              from: detection.version,
+              to: recipe.version,
+              source: detection.source,
+            },
+            `Upgrading ${recipe.name} from v${normalizeSemver(detection.version)} to v${normalizeSemver(recipe.version)}`,
+          );
+        }
+      } else if (detection.found) {
+        // Found but couldn't determine version — treat as already installed
         this.logger.info(
-          { app: recipe.id, version: detection.version, source: detection.source },
-          `Already installed. Skipping.`,
+          {
+            app: recipe.id,
+            source: detection.source,
+          },
+          `Already installed (version unknown). Skipping.`,
         );
         transition("COMPLETED", "success", {
           reason: "already_installed",
@@ -464,7 +556,8 @@ export class UASEngine {
 
       // Write per-app state file for idempotency detection
       const downloadDir = path.join(this.options.download_dir, recipe.id);
-      const resolvedFilename = path.basename(new URL(recipe.installer.url).pathname) || "installer";
+      const resolvedFilename =
+        path.basename(new URL(recipe.installer.url).pathname) || "installer";
       writeAppState(recipe.id, {
         version: recipe.version,
         installedAt: new Date().toISOString(),

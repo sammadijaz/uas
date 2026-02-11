@@ -159,7 +159,8 @@ export type ErrorCategory =
   | "EXECUTION_ERROR"
   | "PERMISSION_ERROR"
   | "VERIFICATION_ERROR"
-  | "ROLLBACK_ERROR";
+  | "ROLLBACK_ERROR"
+  | "DOWNGRADE_BLOCKED";
 
 export interface ExecutionError {
   category: ErrorCategory;

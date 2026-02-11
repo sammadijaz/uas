@@ -46,8 +46,7 @@ export const MSI_EXIT_CODES: Record<number, MsiExitCodeInfo> = {
     code: 1618,
     name: "ERROR_INSTALL_ALREADY_RUNNING",
     category: "busy",
-    message:
-      "Another MSI installation is already in progress. Wait and retry.",
+    message: "Another MSI installation is already in progress. Wait and retry.",
     ok: false,
   },
   1619: {

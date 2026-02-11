@@ -77,17 +77,14 @@ export function buildMsiArgs(opts: MsiInstallOptions): {
 } {
   const logDir = path.join(os.homedir(), ".uas", "logs");
   fs.mkdirSync(logDir, { recursive: true });
-  const logFile = path.join(
-    logDir,
-    `msi-${opts.appId}-${Date.now()}.log`,
-  );
+  const logFile = path.join(logDir, `msi-${opts.appId}-${Date.now()}.log`);
 
   const args: string[] = [
     "/i",
-    opts.msiPath,        // msiexec handles its own path quoting with /i
-    "/qn",               // Quiet, no UI
-    "/norestart",        // Never auto-restart
-    `/l*v`,              // Verbose logging
+    opts.msiPath, // msiexec handles its own path quoting with /i
+    "/qn", // Quiet, no UI
+    "/norestart", // Never auto-restart
+    `/l*v`, // Verbose logging
     logFile,
   ];
 
@@ -222,10 +219,7 @@ export async function executeMsi(
 
     child.on("error", (err) => {
       const durationMs = Date.now() - startMs;
-      logger.error(
-        { error: err.message },
-        "Failed to launch msiexec.exe",
-      );
+      logger.error({ error: err.message }, "Failed to launch msiexec.exe");
       resolve({
         success: false,
         exitCode: -1,

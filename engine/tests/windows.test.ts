@@ -15,10 +15,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 import * as crypto from "crypto";
-import {
-  lookupMsiExitCode,
-  MSI_EXIT_CODES,
-} from "../src/windows/types";
+import { lookupMsiExitCode, MSI_EXIT_CODES } from "../src/windows/types";
 import { buildMsiArgs } from "../src/windows/msi";
 import { evaluateDownload } from "../src/windows/download";
 import { verifyInstaller } from "../src/windows/verify";
@@ -259,7 +256,10 @@ describe("verifyInstaller", () => {
   it("accepts a file with matching checksum", async () => {
     const content = "valid installer bytes";
     fs.writeFileSync(testFile, content);
-    const expectedHash = crypto.createHash("sha256").update(content).digest("hex");
+    const expectedHash = crypto
+      .createHash("sha256")
+      .update(content)
+      .digest("hex");
 
     const result = await verifyInstaller(testFile, expectedHash, logger);
     expect(result.valid).toBe(true);
