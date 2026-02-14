@@ -169,3 +169,6 @@ dev/
 # OS
 Thumbs.db
 Desktop.ini
+
+# Website folder
+uas-website/
