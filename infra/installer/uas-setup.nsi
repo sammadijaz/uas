@@ -14,7 +14,7 @@
 !define PRODUCT_SHORT   "UAS"
 !define PRODUCT_VERSION "0.1.0"
 !define PRODUCT_PUBLISHER "UAS Project"
-!define PRODUCT_WEB     "https://github.com/user/uas"
+!define PRODUCT_WEB     "https://github.com/sammadijaz/uas"
 !define INSTALL_DIR     "$LOCALAPPDATA\${PRODUCT_SHORT}"
 
 Name "${PRODUCT_NAME}"
